@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, onUpdated, ref, toRefs, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import type { Conversation } from '@/client/types/business'
+import type {
+	Conversation,
+	Message as MessageType,
+} from '@/client/types/business'
 import Group from '@/components/Group/Group.vue'
 import Message from '@/components/Message/Message.vue'
 import { useHighLevelClientEmits } from '@/composables/emits'
@@ -10,6 +13,10 @@ import { useMessengerStore } from '@/stores/messenger'
 const clientEmits = useHighLevelClientEmits()
 
 const groupPanel = ref(false)
+
+const isEditMessage = ref(false)
+
+const idMessageToEdit = ref('')
 
 const scrollElement = ref<HTMLElement | null>(null)
 
@@ -26,8 +33,21 @@ const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
 })
 
+watch(messages, () => {
+	if (!currentConversation.value || !messages.value) return
+	clientEmits.SeeConversationEmit(
+		currentConversation.value.id,
+		messages.value[messages.value.length - 1].id
+	)
+})
+
 async function sendMessage(): Promise<void> {
 	if (!currentConversation.value) return
+
+	if (isEditMessage.value) {
+		editMessage()
+		return
+	}
 
 	const temp = inputSentMessage.value
 	if (replyMessage.value.user !== '') {
@@ -40,6 +60,30 @@ async function sendMessage(): Promise<void> {
 	} else {
 		await clientEmits.postMessage(currentConversation.value.id, String(temp))
 	}
+	inputSentMessage.value = ''
+}
+
+async function enterEditMode(
+	messageId: string,
+	messageContent: string
+): Promise<void> {
+	isEditMessage.value = true
+	inputSentMessage.value = messageContent
+	idMessageToEdit.value = messageId
+}
+
+async function editMessage(): Promise<void> {
+	if (!currentConversation.value) return
+	await clientEmits.editMessage(
+		currentConversation.value.id,
+		idMessageToEdit.value,
+		inputSentMessage.value
+	)
+	exitEditMode()
+}
+
+function exitEditMode() {
+	isEditMessage.value = false
 	inputSentMessage.value = ''
 }
 
@@ -145,6 +189,59 @@ async function deleteMessage(messageId: string): Promise<void> {
 
 	await clientEmits.deleteMessage(currentConversation.value.id, messageId)
 }
+
+function getClass(message: MessageType, messages: MessageType[]): string {
+	const c =
+		computed(() => {
+			const index = messages.findIndex((_message) => _message.id === message.id)
+			const previousMessage = messages[index - 1]
+			const nextMessage = messages[index + 1]
+
+			let result = 'top bottom'
+
+			if (
+				nextMessage &&
+				nextMessage.from === message.from &&
+				(!previousMessage || previousMessage.from !== message.from)
+			)
+				result = 'top'
+			else if (
+				previousMessage &&
+				previousMessage.from === message.from &&
+				(!nextMessage || nextMessage.from !== message.from)
+			)
+				result = 'bottom'
+			else if (
+				previousMessage &&
+				nextMessage &&
+				previousMessage.from === message.from &&
+				nextMessage.from === message.from
+			)
+				result = 'middle'
+			return result
+		}).value ?? 'middle'
+	console.log(c, message.from)
+	return c
+}
+
+const messageSeen = (messageID: string) =>
+	computed(() => {
+		if (!currentConversation.value) return []
+		const views = currentConversation.value.seen
+		const viewArray: {
+			id: number
+			user: string
+			message_id: string
+			time: string
+		}[] = []
+		let id = 0
+		for (const view in views) {
+			const value = views[view]
+			if (value === -1 || value.message_id !== messageID) continue
+			viewArray.push({ id: id++, user: view, ...value })
+		}
+		return viewArray
+	}).value
 </script>
 
 <template>
@@ -216,11 +313,25 @@ async function deleteMessage(messageId: string): Promise<void> {
 							<Message
 								:message="message"
 								:url-icon="getProfilePicture(message.from)"
+								:class="getClass(message, messages)"
 								@react="reactMessage($event)"
 								@reply-to-message="
 									replyToMessage(message.from, message.content, message.id)
 								"
-								@delete-message="deleteMessage(message.id)" />
+								@delete-message="deleteMessage(message.id)"
+								@edit-message="
+									enterEditMode(message.id, String(message.content))
+								" />
+							<div class="view">
+								<img
+									v-for="view of messageSeen(message.id)"
+									:key="view.id"
+									:src="getProfilePicture(view.user)"
+									:title="`Vu par ${view.user} à ${convertStringToDate(
+										view.time
+									).toLocaleTimeString()}`"
+									alt="view" />
+							</div>
 						</div>
 					</div>
 				</div>
@@ -238,6 +349,13 @@ async function deleteMessage(messageId: string): Promise<void> {
 
 						<div class="ui fluid search">
 							<div class="ui icon input">
+								<div v-if="isEditMessage">
+									<i
+										title="Retour"
+										class="circular cancel icon"
+										@click="exitEditMode()"></i>
+									<p>Edition</p>
+								</div>
 								<input
 									v-on:keyup.enter="sendMessage()"
 									v-model="inputSentMessage"
