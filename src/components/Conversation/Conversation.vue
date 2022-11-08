@@ -27,7 +27,7 @@ const { users, currentConversation, authenticatedUsername } =
 
 const router = useRouter()
 
-const inputSentMessage = ref('')
+const inputSentMessage = ref('');
 
 const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
@@ -370,6 +370,10 @@ const messageSeen = (messageID: string) =>
 			</div>
 			<div class="conversation-sidebar" v-if="groupPanel">
 				<Group />
+			</div>
+
+			<div>
+				<search/>
 			</div>
 		</div>
 	</div>
