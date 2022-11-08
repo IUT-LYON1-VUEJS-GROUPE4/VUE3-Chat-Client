@@ -191,17 +191,21 @@ async function deleteMessage(messageId: string): Promise<void> {
 }
 
 function userIsOnLine(conversation: Conversation): boolean {
+	
+
 	if (conversation.participants.length > 2) 
 	{
+		let returnState = false;
+
 		conversation.participants.forEach(participant => {
 			if(availableUsernames.value.includes(participant))
 			{
 				console.log('true')
-				return true
+				returnState = true
 			}
 		});
-		console.log('false')
-		return false
+		
+		return returnState
 	}
 	else
 	{
@@ -282,11 +286,8 @@ const messageSeen = (messageID: string) =>
 
 			<div class="title">
 				<div class="ui compact">
-					<div v-if="currentConversation">
-						<i :class="{ 'icon circle': userIsOnLine(currentConversation) }"></i>
-						<p>{{ userIsOnLine(currentConversation) }}</p>
-						<span>{{ titleConversation(currentConversation) }}</span>
-					</div>
+					<i v-if="currentConversation" :class="{ 'icon circle': userIsOnLine(currentConversation) }"></i>
+					<span v-if="currentConversation"> {{ titleConversation(currentConversation) }}</span>
 
 					<div class="ui simple dropdown item">
 						<i class="vertical ellipsis icon"></i>
