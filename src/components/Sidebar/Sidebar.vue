@@ -100,33 +100,6 @@ function titleConversation(conversation: Conversation): string {
 	return 'Anonymous'
 }
 
-const messageSeen = (conversation: Conversation) =>
-	computed(() => {
-		//Récuperer le conversationId
-		//if(!conversation.)
-		const viewers = conversation.seen; //Le view plus bas représente l'utilisateur 
-		for(const viewer in viewers){
-			
-		}
-		//TODO parcourir le tableau views, si la value de 
-		/*if (!currentConversation.value) return []
-		const views = currentConversation.value.seen
-		const viewArray: {
-			id: number
-			user: string
-			message_id: string
-			time: string
-		}[] = []
-		let id = 0
-		for (const view in views) { 
-			const value = views[view]
-			if (value === -1 || value.message_id !== messageID) continue
-			viewArray.push({ id: id++, user: view, ...value })
-		}
-		return viewArray */
-	}
-	).value
-
 function sortConversations(conversations: Conversation[]): Conversation[] {
 	return conversations.sort((a, b) =>
 		(b.messages.length === 0
