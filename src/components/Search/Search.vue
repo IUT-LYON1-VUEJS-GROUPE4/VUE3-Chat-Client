@@ -3,6 +3,7 @@ import { computed, onMounted, onUpdated, ref, toRefs, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import type {
 	Conversation,
+	Message,
 	Message as MessageType,
 } from '@/client/types/business'
 
@@ -17,28 +18,42 @@ const searchInput = ref('');
 
 const authStore = useAuthStore()
 
+const conversationsRef = ref<Conversation[]>([])
+
 const { user } = toRefs(authStore)
 
 
 function displayMessage(){
-	console.log(searchInput.value);
+	
 	if(searchInput.value.length < 4){
 		return;
 	}
-	console.log(conversations.value)
+
+	//console.log(conversations.value[0].messages);
+	console.log(filteredMessage(conversations.value[0])[0])
+	
 }
 
-const filteredConversation = computed(() =>
-	{
-		//Créer un nouveau tableau de conversation
-		//Supprimer tous les messages dans des conversation, puis les conversation et mettre dans le tableau retourné
-		return conversations;
-		/*conversations.value.filter((user) => {
-			return user.username.toLowerCase().includes(searchInput.value.toLowerCase())
-		})*/
-	}
+/*const filteredMessage = computed((conv:Conversation) =>{
 	
-)
+	conv.messages.filter((mess) => {
+		return mess.content?.toLowerCase().includes(searchInput.value.toLowerCase())
+	})
+}
+)*/
+
+function filteredMessage(conv:Conversation){
+	
+		return conv.messages.filter((mess) => {
+			return mess.content?.toLowerCase().includes(searchInput.value.toLowerCase())
+		})
+	
+	
+}
+
+function convertStringToDate(date: string): Date {
+	return new Date(date)
+}
 
 
 </script>
@@ -59,9 +74,13 @@ const filteredConversation = computed(() =>
 				<div class="results"></div>
 			</div>
 		</div>
+		
 		<div class="conversations">
 			
 			<div class="conversation" v-for="conversation in conversations" :key="conversation.id">
+				
+				<div v-if="filteredMessage(conversation).length!== 0">
+
 				
 				<div class="author">
 	
@@ -72,14 +91,15 @@ const filteredConversation = computed(() =>
 					
 				</div>
 
-				<div class="messages" v-for="message in conversation.messages" :key="message.id">
+				<div class="messages" v-for="message in filteredMessage(conversation)" :key="message.id">
 				
-						<div class="time">COUCOU</div> <!-- Heure / date -->
+						<div class="time">{{convertStringToDate(conversation.updated_at)}}</div> <!-- Heure / date -->
 						<div class="bubble"> <!-- Message -->
 							{{message.content}}
 						</div>
 					
 				</div>
+			</div>
 
 				<!-- <Message
 								:message="message"
