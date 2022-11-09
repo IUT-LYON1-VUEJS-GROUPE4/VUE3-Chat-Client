@@ -23,7 +23,7 @@ const conversationsRef = ref<Conversation[]>([])
 const { user } = toRefs(authStore)
 
 
-function displayMessage(){
+/*function displayMessage(){
 	
 	if(searchInput.value.length < 4){
 		return;
@@ -32,21 +32,16 @@ function displayMessage(){
 	//console.log(conversations.value[0].messages);
 	console.log(filteredMessage(conversations.value[0])[0])
 	
-}
+}*/
 
-/*const filteredMessage = computed((conv:Conversation) =>{
-	
-	conv.messages.filter((mess) => {
-		return mess.content?.toLowerCase().includes(searchInput.value.toLowerCase())
-	})
-}
-)*/
 
 function filteredMessage(conv:Conversation){
-	
-		return conv.messages.filter((mess) => {
+		
+			return conv.messages.filter((mess) => {
 			return mess.content?.toLowerCase().includes(searchInput.value.toLowerCase())
 		})
+		
+		
 	
 	
 }
@@ -81,42 +76,63 @@ function convertStringToDate(date: string): Date {
 				
 				<div v-if="filteredMessage(conversation).length!== 0">
 
-				
-				<div class="author">
-	
-					<img src="" /><!-- Image du groupe / profil -->
-					<span>{{conversation.type==="many_to_many"
-						? conversation.participants 
-						: conversation.participants[0] === user?.username ? conversation.participants[1] : conversation.participants[0] }}</span><!-- Nom de conv -->
-					
+				<!-- Faire un gros vif avec d'un coté les groupes et de l'autre les conv?-->
+
+				<div v-if="conversation.type==='many_to_many'">
+
+					<div class="author">
+						<div class="avatar">
+							<span data-v-73baddaf="">
+							<i data-v-73baddaf="" class="users icon"></i>
+							</span>
+						</div>
+						
+						<span>
+							Groupe : {{ JSON.stringify(conversation.participants).replace('[','').replace(']','')}}</span><!-- Nom de conv -->
+					</div>
+
+					<div  v-for="message in filteredMessage(conversation)" :key="message.id">
+						<div  v-bind:class="message.from === user?.username ? 'message mine':'message'" >
+							<div  v-bind:class="message.from === user?.username ? 'time mine':'time'"> {{convertStringToDate(conversation.updated_at).toLocaleDateString()}} </div>
+							<div class="bubble"> 
+								{{message.content}}
+							</div>
+						</div>
+					</div>
 				</div>
 
-				<div class="messages" v-for="message in filteredMessage(conversation)" :key="message.id">
-				
-						<div class="time">{{convertStringToDate(conversation.updated_at)}}</div> <!-- Heure / date -->
-						<div class="bubble"> <!-- Message -->
-							{{message.content}}
+				<div v-else>
+					<div class="author">
+						
+						<img class="img-profil-search" :src="user?.picture_url" /><!-- Image du groupe / profil -->
+						<span>
+							{{conversation.participants[0] === user?.username ? conversation.participants[1] : conversation.participants[0]}}
+						</span>
+					</div>
+
+					<div  v-for="message in filteredMessage(conversation)" :key="message.id">
+						<div  v-bind:class="message.from === user?.username ? 'message mine':'message'" >
+							<!-- <div class="time">{{convertStringToDate(conversation.updated_at)}}</div> Heure / date -->
+							<div  v-bind:class="message.from === user?.username ? 'time mine':'time'"> {{convertStringToDate(conversation.updated_at).toLocaleDateString()}} </div>
+							<div class="bubble"> 
+								{{message.content}}
+							</div>
 						</div>
-					
+					</div>
 				</div>
+				
 			</div>
 
-				<!-- <Message
-								:message="message"
-								:url-icon="getProfilePicture(message.from)"
-								:class="getClass(message, messages)"
-								@react="reactMessage($event)"
-								@reply-to-message="
-									replyToMessage(message.from, message.content, message.id)
-								"
-								@delete-message="deleteMessage(message.id)"
-								@edit-message="
-									enterEditMode(message.id, String(message.content))
-								" />
-							<div class="view"> -->
 			</div>
 		</div>
 	</div>
 </template>
 
 <style scoped src="./Search.css" />
+
+
+<!--
+
+
+	
+-->
