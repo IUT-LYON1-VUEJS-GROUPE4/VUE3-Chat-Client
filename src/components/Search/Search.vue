@@ -18,7 +18,6 @@ const searchInput = ref('');
 
 const authStore = useAuthStore()
 
-const conversationsRef = ref<Conversation[]>([])
 
 const { user } = toRefs(authStore)
 
@@ -73,8 +72,8 @@ function convertStringToDate(date: string): Date {
 					</div>
 
 					<div  v-for="message in filteredMessage(conversation)" :key="message.id">
-						<div  v-bind:class="message.from === user?.username ? 'message mine':'message'" >
-							<div  v-bind:class="message.from === user?.username ? 'time mine':'time'">
+						<div  :class="message.from === user?.username ? 'message mine':'message'" >
+							<div  :class="message.from === user?.username ? 'time mine':'time'">
 								{{convertStringToDate(conversation.updated_at).toLocaleString().substring(0,16)}}
 								</div>
 							<div class="bubble"> 
@@ -98,8 +97,8 @@ function convertStringToDate(date: string): Date {
 					</div>
 
 					<div  v-for="message in filteredMessage(conversation)" :key="message.id">
-						<div  v-bind:class="message.from === user?.username ? 'message mine':'message'" >
-							<div  v-bind:class="message.from === user?.username ? 'time mine':'time'"> 
+						<div  :class="message.from === user?.username ? 'message mine':'message'" >
+							<div  :class="message.from === user?.username ? 'time mine':'time'"> 
 								
 								{{convertStringToDate(conversation.updated_at).toLocaleString().substring(0,16)}} 
 							</div>
