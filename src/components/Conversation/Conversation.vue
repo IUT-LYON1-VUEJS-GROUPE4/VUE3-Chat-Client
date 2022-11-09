@@ -200,7 +200,6 @@ function userIsOnLine(conversation: Conversation): boolean {
 		conversation.participants.forEach(participant => {
 			if(availableUsernames.value.includes(participant))
 			{
-				console.log('true')
 				returnState = true
 			}
 		});
@@ -243,7 +242,6 @@ function getClass(message: MessageType, messages: MessageType[]): string {
 				result = 'middle'
 			return result
 		}).value ?? 'middle'
-	console.log(c, message.from)
 	return c
 }
 
