@@ -7,6 +7,10 @@
 	flex-direction: column;
 }
 
+.img-profil-search {
+	margin-right: 10px;
+}
+
 .filter {
 	padding: 20px;
 }
@@ -35,6 +39,8 @@
 }
 
 .avatar {
+
+	
 	width: 40px;
 	height: 40px;
 	border-radius: 20px;
@@ -44,14 +50,19 @@
 	line-height: 40px;
 	font-weight: bold;
 	font-size: 18px;
+	margin-right: 10px;
 }
+
+
 
 .conversation span {
 	font-weight: bold;
 	font-size: 20px;
 	line-height: 40px;
-	padding-left: 10px;
+	
 }
+
+
 
 .message {
 	display: flex;
@@ -60,14 +71,32 @@
 }
 
 .time {
-	width: 120px;
+	width: 150;
+	display: block;
+	
+	margin: 0 10px 0 50px;
+}
+
+.time.mine{
+	width: 80px;
 	display: block;
 	white-space: nowrap;
-	margin: 0 10px 0 50px;
+	margin: 0 50px 0 10px;
+
 }
 
 .bubble {
 	background: #f1f0f0;
 	padding: 6px 16px;
 	border-radius: 16px;
+}
+
+.mine {
+	justify-content: end;
+	flex-direction: row-reverse;
+}
+
+.mine .bubble {
+	background: #0099ff;
+	color: white;
 }

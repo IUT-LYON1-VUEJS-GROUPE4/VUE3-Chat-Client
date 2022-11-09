@@ -22,8 +22,12 @@ const scrollElement = ref<HTMLElement | null>(null)
 
 const messengerStore = useMessengerStore()
 
-const { users, currentConversation, authenticatedUsername } =
-	toRefs(messengerStore)
+const {
+	users,
+	availableUsernames,
+	currentConversation,
+	authenticatedUsername,
+} = toRefs(messengerStore)
 
 const router = useRouter()
 
@@ -35,10 +39,9 @@ const messages = computed(() => {
 
 watch(messages, () => {
 	if (!currentConversation.value || !messages.value) return
-	clientEmits.SeeConversationEmit(
-		currentConversation.value.id,
-		messages.value[messages.value.length - 1].id
-	)
+	const messageId = messages.value[messages.value.length - 1]?.id
+	if (!messageId) return
+	clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
 })
 
 async function sendMessage(): Promise<void> {
@@ -190,6 +193,22 @@ async function deleteMessage(messageId: string): Promise<void> {
 	await clientEmits.deleteMessage(currentConversation.value.id, messageId)
 }
 
+function userIsOnLine(conversation: Conversation): boolean {
+	if (conversation.participants.length > 2) {
+		let returnState = false
+
+		conversation.participants.forEach((participant) => {
+			if (availableUsernames.value.includes(participant)) {
+				returnState = true
+			}
+		})
+
+		return returnState
+	} else {
+		return availableUsernames.value.includes(conversation.participants[1])
+	}
+}
+
 function getClass(message: MessageType, messages: MessageType[]): string {
 	const c =
 		computed(() => {
@@ -220,7 +239,6 @@ function getClass(message: MessageType, messages: MessageType[]): string {
 				result = 'middle'
 			return result
 		}).value ?? 'middle'
-	console.log(c, message.from)
 	return c
 }
 
@@ -263,10 +281,13 @@ const messageSeen = (messageID: string) =>
 
 			<div class="title">
 				<div class="ui compact">
-					<i class="icon circle"></i>
+					<i
+						v-if="currentConversation"
+						:class="{ 'icon circle': userIsOnLine(currentConversation) }"></i>
 					<span v-if="currentConversation">
 						{{ titleConversation(currentConversation) }}
 					</span>
+
 					<div class="ui simple dropdown item">
 						<i class="vertical ellipsis icon"></i>
 
@@ -370,6 +391,10 @@ const messageSeen = (messageID: string) =>
 			</div>
 			<div class="conversation-sidebar" v-if="groupPanel">
 				<Group />
+			</div>
+
+			<div>
+				<search />
 			</div>
 		</div>
 	</div>

@@ -10,6 +10,8 @@ const clientEmits = useHighLevelClientEmits()
 
 const { users } = toRefs(messengerStore)
 
+const { availableUsernames } = toRefs(messengerStore)
+
 const searchInput = ref('')
 
 const openingConversation = ref(false)
@@ -31,6 +33,10 @@ const selectedUsers = ref<User[]>([])
 
 function userIsSelected(user: User): boolean {
 	return selectedUsers.value.includes(user)
+}
+
+function userIsOnLine(username: string): boolean {
+	return availableUsernames.value.includes(username)
 }
 
 function toggleUser(user: User): void {
@@ -71,7 +77,9 @@ const filteredUsers = computed(() =>
 				@click="toggleUser(user)"
 				:class="{ selected: userIsSelected(user) }">
 				<img :src="user.picture_url" :alt="`Photo de ${user.username}`" />
-				<span class="">{{ user.username }}</span>
+				<span :class="{ available: userIsOnLine(user.username) }">
+					{{ user.username }}
+				</span>
 			</div>
 		</div>
 
