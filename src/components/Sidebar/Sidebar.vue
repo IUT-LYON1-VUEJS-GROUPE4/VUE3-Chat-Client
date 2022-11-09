@@ -16,8 +16,6 @@ const { logout } = authStore
 
 const searchInput = ref('')
 
-const seenMessageClass = ref('')
-
 const { conversations, users, availableUsernames, authenticatedUsername } =
 	toRefs(messengerStore)
 

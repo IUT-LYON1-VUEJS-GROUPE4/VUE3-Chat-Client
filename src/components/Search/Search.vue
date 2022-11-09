@@ -100,7 +100,8 @@ function convertStringToDate(date: string): Date {
 										: users.find(
 												(item) => item.username === conversation.participants[0]
 										  )?.picture_url
-								" />
+								"
+								:alt="`Photo de ${conversation.participants[1]}`" />
 							<span>
 								{{
 									conversation.participants[0] === authenticatedUsername
