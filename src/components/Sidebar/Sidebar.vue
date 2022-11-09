@@ -108,7 +108,6 @@ function userIsOnLine(conversation: Conversation): boolean {
 		conversation.participants.forEach(participant => {
 			if(availableUsernames.value.includes(participant))
 			{
-				console.log('true')
 				returnState = true
 			}
 		});
@@ -208,7 +207,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 				<div class="content">
 					<div class="metadata">
 						<div class="title">
-							<i :class="{ 'ui small icon circle green': userIsOnLine(conversation) }"></i>
+							<i v-if="userIsOnLine(conversation)" class="ui small icon circle green"></i>
 							{{ titleConversation(conversation) }}
 						</div>
 						<span class="time">
