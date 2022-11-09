@@ -16,7 +16,11 @@ const { logout } = authStore
 
 const searchInput = ref('')
 
+
+const seenMessageClass = ref('')
+
 const { conversations, users, availableUsernames, authenticatedUsername } = toRefs(messengerStore)
+
 
 const conversationSelectedId = ref('')
 
@@ -185,10 +189,20 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 					</div>
 				</div>
 			</div>
+			
+			
 
 			<div
 				v-for="conversation in filteredConversations"
-				class="conversation"
+
+				v-bind:class="conversation.seen[user?.username].message_id?
+
+					conversation.seen[user?.username].message_id 
+					=== conversation.messages[conversation.messages.length-1].id 
+						? 'conversation'
+						: 'conversation new' 
+					:'conversation'"
+
 				:key="conversation.id"
 				:class="{
 					selected: conversation.id === conversationSelectedId,
@@ -196,6 +210,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 				:title="titleConversation(conversation)"
 				@click="openConversation(conversation.id)">
 				<a class="avatar">
+					
 					<img
 						v-if="conversation.participants.length < 3"
 						:src="getProfilePicture(conversation.participants)"
@@ -224,7 +239,8 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 						</span>
 					</div>
 					<div class="metadata">
-						<div class="text">
+								
+						<div class="text" > 
 							{{
 								conversation.messages.length === 0
 									? 'Nouvelle conversation'
@@ -232,6 +248,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 											.content
 							}}
 						</div>
+					
 						<span class="time">
 							{{
 								conversation.messages.length === 0
