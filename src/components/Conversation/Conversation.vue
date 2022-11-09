@@ -22,7 +22,7 @@ const scrollElement = ref<HTMLElement | null>(null)
 
 const messengerStore = useMessengerStore()
 
-const { users, currentConversation, authenticatedUsername } =
+const { users, availableUsernames, currentConversation, authenticatedUsername } =
 	toRefs(messengerStore)
 
 const router = useRouter()
@@ -190,6 +190,28 @@ async function deleteMessage(messageId: string): Promise<void> {
 	await clientEmits.deleteMessage(currentConversation.value.id, messageId)
 }
 
+function userIsOnLine(conversation: Conversation): boolean {
+	
+
+	if (conversation.participants.length > 2) 
+	{
+		let returnState = false;
+
+		conversation.participants.forEach(participant => {
+			if(availableUsernames.value.includes(participant))
+			{
+				returnState = true
+			}
+		});
+		
+		return returnState
+	}
+	else
+	{
+		return availableUsernames.value.includes(conversation.participants[1])
+	}
+}
+
 function getClass(message: MessageType, messages: MessageType[]): string {
 	const c =
 		computed(() => {
@@ -220,7 +242,6 @@ function getClass(message: MessageType, messages: MessageType[]): string {
 				result = 'middle'
 			return result
 		}).value ?? 'middle'
-	console.log(c, message.from)
 	return c
 }
 
@@ -263,10 +284,9 @@ const messageSeen = (messageID: string) =>
 
 			<div class="title">
 				<div class="ui compact">
-					<i class="icon circle"></i>
-					<span v-if="currentConversation">
-						{{ titleConversation(currentConversation) }}
-					</span>
+					<i v-if="currentConversation" :class="{ 'icon circle': userIsOnLine(currentConversation) }"></i>
+					<span v-if="currentConversation"> {{ titleConversation(currentConversation) }}</span>
+
 					<div class="ui simple dropdown item">
 						<i class="vertical ellipsis icon"></i>
 
