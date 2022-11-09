@@ -215,18 +215,14 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 						</span>
 					</div>
 					<div class="metadata">
-									
-	
-					
+								
 						<div class="text" > 
-							
 							{{
 								conversation.messages.length === 0
 									? 'Nouvelle conversation'
 									: conversation.messages[conversation.messages.length - 1]
 											.content
 							}}
-							
 						</div>
 					
 						<span class="time">
