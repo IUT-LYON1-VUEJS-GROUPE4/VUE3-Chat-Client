@@ -16,11 +16,10 @@ const { logout } = authStore
 
 const searchInput = ref('')
 
-
 const seenMessageClass = ref('')
 
-const { conversations, users, availableUsernames, authenticatedUsername } = toRefs(messengerStore)
-
+const { conversations, users, availableUsernames, authenticatedUsername } =
+	toRefs(messengerStore)
 
 const conversationSelectedId = ref('')
 
@@ -103,23 +102,17 @@ function titleConversation(conversation: Conversation): string {
 }
 
 function userIsOnLine(conversation: Conversation): boolean {
-	
+	if (conversation.participants.length > 2) {
+		let returnState = false
 
-	if (conversation.participants.length > 2) 
-	{
-		let returnState = false;
-
-		conversation.participants.forEach(participant => {
-			if(availableUsernames.value.includes(participant))
-			{
+		conversation.participants.forEach((participant) => {
+			if (availableUsernames.value.includes(participant)) {
 				returnState = true
 			}
-		});
-		
+		})
+
 		return returnState
-	}
-	else
-	{
+	} else {
 		return availableUsernames.value.includes(conversation.participants[1])
 	}
 }
@@ -189,28 +182,20 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 					</div>
 				</div>
 			</div>
-			
-			
 
 			<div
 				v-for="conversation in filteredConversations"
-
-				v-bind:class="conversation.seen[user?.username].message_id?
-
-					conversation.seen[user?.username].message_id 
-					=== conversation.messages[conversation.messages.length-1].id 
-						? 'conversation'
-						: 'conversation new' 
-					:'conversation'"
-
-				:key="conversation.id"
+				class="conversation"
 				:class="{
 					selected: conversation.id === conversationSelectedId,
+					new:
+						authenticatedUsername &&
+						!Object.keys(conversation.seen).includes(authenticatedUsername),
 				}"
+				:key="conversation.id"
 				:title="titleConversation(conversation)"
 				@click="openConversation(conversation.id)">
 				<a class="avatar">
-					
 					<img
 						v-if="conversation.participants.length < 3"
 						:src="getProfilePicture(conversation.participants)"
@@ -222,7 +207,9 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 				<div class="content">
 					<div class="metadata">
 						<div class="title">
-							<i v-if="userIsOnLine(conversation)" class="ui small icon circle green"></i>
+							<i
+								v-if="userIsOnLine(conversation)"
+								class="ui small icon circle green"></i>
 							{{ titleConversation(conversation) }}
 						</div>
 						<span class="time">
@@ -239,8 +226,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 						</span>
 					</div>
 					<div class="metadata">
-								
-						<div class="text" > 
+						<div class="text">
 							{{
 								conversation.messages.length === 0
 									? 'Nouvelle conversation'
@@ -248,7 +234,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 											.content
 							}}
 						</div>
-					
+
 						<span class="time">
 							{{
 								conversation.messages.length === 0
