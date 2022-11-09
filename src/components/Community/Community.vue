@@ -77,7 +77,9 @@ const filteredUsers = computed(() =>
 				@click="toggleUser(user)"
 				:class="{ selected: userIsSelected(user) }">
 				<img :src="user.picture_url" :alt="`Photo de ${user.username}`" />
-				<span :class="{ available: userIsOnLine(user.username) }">{{ user.username }}</span>
+				<span :class="{ available: userIsOnLine(user.username) }">
+					{{ user.username }}
+				</span>
 			</div>
 		</div>
 

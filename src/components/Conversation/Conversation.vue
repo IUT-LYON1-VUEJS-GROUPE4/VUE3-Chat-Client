@@ -22,12 +22,16 @@ const scrollElement = ref<HTMLElement | null>(null)
 
 const messengerStore = useMessengerStore()
 
-const { users, availableUsernames, currentConversation, authenticatedUsername } =
-	toRefs(messengerStore)
+const {
+	users,
+	availableUsernames,
+	currentConversation,
+	authenticatedUsername,
+} = toRefs(messengerStore)
 
 const router = useRouter()
 
-const inputSentMessage = ref('');
+const inputSentMessage = ref('')
 
 const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
@@ -35,10 +39,9 @@ const messages = computed(() => {
 
 watch(messages, () => {
 	if (!currentConversation.value || !messages.value) return
-	clientEmits.SeeConversationEmit(
-		currentConversation.value.id,
-		messages.value[messages.value.length - 1].id
-	)
+	const messageId = messages.value[messages.value.length - 1]?.id
+	if (!messageId) return
+	clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
 })
 
 async function sendMessage(): Promise<void> {
@@ -191,23 +194,17 @@ async function deleteMessage(messageId: string): Promise<void> {
 }
 
 function userIsOnLine(conversation: Conversation): boolean {
-	
+	if (conversation.participants.length > 2) {
+		let returnState = false
 
-	if (conversation.participants.length > 2) 
-	{
-		let returnState = false;
-
-		conversation.participants.forEach(participant => {
-			if(availableUsernames.value.includes(participant))
-			{
+		conversation.participants.forEach((participant) => {
+			if (availableUsernames.value.includes(participant)) {
 				returnState = true
 			}
-		});
-		
+		})
+
 		return returnState
-	}
-	else
-	{
+	} else {
 		return availableUsernames.value.includes(conversation.participants[1])
 	}
 }
@@ -284,8 +281,12 @@ const messageSeen = (messageID: string) =>
 
 			<div class="title">
 				<div class="ui compact">
-					<i v-if="currentConversation" :class="{ 'icon circle': userIsOnLine(currentConversation) }"></i>
-					<span v-if="currentConversation"> {{ titleConversation(currentConversation) }}</span>
+					<i
+						v-if="currentConversation"
+						:class="{ 'icon circle': userIsOnLine(currentConversation) }"></i>
+					<span v-if="currentConversation">
+						{{ titleConversation(currentConversation) }}
+					</span>
 
 					<div class="ui simple dropdown item">
 						<i class="vertical ellipsis icon"></i>
@@ -393,7 +394,7 @@ const messageSeen = (messageID: string) =>
 			</div>
 
 			<div>
-				<search/>
+				<search />
 			</div>
 		</div>
 	</div>
