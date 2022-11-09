@@ -23,27 +23,10 @@ const conversationsRef = ref<Conversation[]>([])
 const { user } = toRefs(authStore)
 
 
-/*function displayMessage(){
-	
-	if(searchInput.value.length < 4){
-		return;
-	}
-
-	//console.log(conversations.value[0].messages);
-	console.log(filteredMessage(conversations.value[0])[0])
-	
-}*/
-
-
 function filteredMessage(conv:Conversation){
-		
-			return conv.messages.filter((mess) => {
-			return mess.content?.toLowerCase().includes(searchInput.value.toLowerCase())
-		})
-		
-		
-	
-	
+	return conv.messages.filter((mess) => {
+		return mess.content?.toLowerCase().includes(searchInput.value.toLowerCase())
+	})	
 }
 
 function convertStringToDate(date: string): Date {
@@ -59,7 +42,6 @@ function convertStringToDate(date: string): Date {
 			<div class="ui fluid search">
 				<div class="ui icon input">
 					<input
-						v-on:keyup="displayMessage()"
 						v-model="searchInput"
 						class="prompt"
 						type="text"
@@ -75,9 +57,7 @@ function convertStringToDate(date: string): Date {
 			<div class="conversation" v-for="conversation in conversations" :key="conversation.id">
 				
 				<div v-if="filteredMessage(conversation).length!== 0">
-
-				<!-- Faire un gros vif avec d'un coté les groupes et de l'autre les conv?-->
-
+				
 				<div v-if="conversation.type==='many_to_many'">
 
 					<div class="author">
@@ -88,12 +68,15 @@ function convertStringToDate(date: string): Date {
 						</div>
 						
 						<span>
-							Groupe : {{ JSON.stringify(conversation.participants).replace('[','').replace(']','')}}</span><!-- Nom de conv -->
+							Groupe : {{ JSON.stringify(conversation.participants).replace('[','').replace(']','')}}
+						</span>
 					</div>
 
 					<div  v-for="message in filteredMessage(conversation)" :key="message.id">
 						<div  v-bind:class="message.from === user?.username ? 'message mine':'message'" >
-							<div  v-bind:class="message.from === user?.username ? 'time mine':'time'"> {{convertStringToDate(conversation.updated_at).toLocaleDateString()}} </div>
+							<div  v-bind:class="message.from === user?.username ? 'time mine':'time'">
+								{{convertStringToDate(conversation.updated_at).toLocaleString().substring(0,16)}}
+								</div>
 							<div class="bubble"> 
 								{{message.content}}
 							</div>
@@ -104,7 +87,11 @@ function convertStringToDate(date: string): Date {
 				<div v-else>
 					<div class="author">
 						
-						<img class="img-profil-search" :src="user?.picture_url" /><!-- Image du groupe / profil -->
+						<img 
+							class="img-profil-search" 
+							:src="conversation.participants[0] === user?.username 
+							? users.find(item => item.username === conversation.participants[1])?.picture_url
+							: users.find(item => item.username === conversation.participants[0])?.picture_url " />
 						<span>
 							{{conversation.participants[0] === user?.username ? conversation.participants[1] : conversation.participants[0]}}
 						</span>
@@ -112,8 +99,10 @@ function convertStringToDate(date: string): Date {
 
 					<div  v-for="message in filteredMessage(conversation)" :key="message.id">
 						<div  v-bind:class="message.from === user?.username ? 'message mine':'message'" >
-							<!-- <div class="time">{{convertStringToDate(conversation.updated_at)}}</div> Heure / date -->
-							<div  v-bind:class="message.from === user?.username ? 'time mine':'time'"> {{convertStringToDate(conversation.updated_at).toLocaleDateString()}} </div>
+							<div  v-bind:class="message.from === user?.username ? 'time mine':'time'"> 
+								
+								{{convertStringToDate(conversation.updated_at).toLocaleString().substring(0,16)}} 
+							</div>
 							<div class="bubble"> 
 								{{message.content}}
 							</div>
@@ -129,10 +118,3 @@ function convertStringToDate(date: string): Date {
 </template>
 
 <style scoped src="./Search.css" />
-
-
-<!--
-
-
-	
--->

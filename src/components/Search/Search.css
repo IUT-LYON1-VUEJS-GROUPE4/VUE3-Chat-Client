@@ -71,10 +71,10 @@
 }
 
 .time {
-	width: 80px;
+	width: 150;
 	display: block;
-	white-space: nowrap;
-	margin: 0 0 0 50px;
+	
+	margin: 0 10px 0 50px;
 }
 
 .time.mine{
