@@ -16,9 +16,11 @@ const { logout } = authStore
 
 const searchInput = ref('')
 
+
 const seenMessageClass = ref('')
 
-const { conversations, users, authenticatedUsername } = toRefs(messengerStore)
+const { conversations, users, availableUsernames, authenticatedUsername } = toRefs(messengerStore)
+
 
 const conversationSelectedId = ref('')
 
@@ -98,6 +100,28 @@ function titleConversation(conversation: Conversation): string {
 	}
 
 	return 'Anonymous'
+}
+
+function userIsOnLine(conversation: Conversation): boolean {
+	
+
+	if (conversation.participants.length > 2) 
+	{
+		let returnState = false;
+
+		conversation.participants.forEach(participant => {
+			if(availableUsernames.value.includes(participant))
+			{
+				returnState = true
+			}
+		});
+		
+		return returnState
+	}
+	else
+	{
+		return availableUsernames.value.includes(conversation.participants[1])
+	}
 }
 
 function sortConversations(conversations: Conversation[]): Conversation[] {
@@ -198,7 +222,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 				<div class="content">
 					<div class="metadata">
 						<div class="title">
-							<i class="ui small icon circle"></i>
+							<i v-if="userIsOnLine(conversation)" class="ui small icon circle green"></i>
 							{{ titleConversation(conversation) }}
 						</div>
 						<span class="time">

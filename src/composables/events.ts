@@ -96,7 +96,7 @@ export function listenHighLevelClientEvents() {
 	chatClient.on<UsersAvailableEvent>(
 		'@usersAvailable',
 		async ({ usernames }) => {
-			//TODO
+			messengerStore.upsertUsersAvailable(usernames)
 		}
 	)
 
