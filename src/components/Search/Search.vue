@@ -72,8 +72,8 @@ function convertStringToDate(date: string): Date {
 					</div>
 
 					<div  v-for="message in filteredMessage(conversation)" :key="message.id">
-						<div  :class="message.from === user?.username ? 'message mine':'message'" >
-							<div  :class="message.from === user?.username ? 'time mine':'time'">
+						<div  :class="message.from === authenticatedUsername ? 'message mine':'message'" >
+							<div  :class="message.from === authenticatedUsername ? 'time mine':'time'">
 								{{convertStringToDate(conversation.updated_at).toLocaleString().substring(0,16)}}
 								</div>
 							<div class="bubble"> 
@@ -88,17 +88,17 @@ function convertStringToDate(date: string): Date {
 						
 						<img 
 							class="img-profil-search" 
-							:src="conversation.participants[0] === user?.username 
+							:src="conversation.participants[0] === authenticatedUsername
 							? users.find(item => item.username === conversation.participants[1])?.picture_url
 							: users.find(item => item.username === conversation.participants[0])?.picture_url " />
 						<span>
-							{{conversation.participants[0] === user?.username ? conversation.participants[1] : conversation.participants[0]}}
+							{{conversation.participants[0] === authenticatedUsername ? conversation.participants[1] : conversation.participants[0]}}
 						</span>
 					</div>
 
 					<div  v-for="message in filteredMessage(conversation)" :key="message.id">
-						<div  :class="message.from === user?.username ? 'message mine':'message'" >
-							<div  :class="message.from === user?.username ? 'time mine':'time'"> 
+						<div  :class="message.from === authenticatedUsername ? 'message mine':'message'" >
+							<div  :class="message.from === authenticatedUsername ? 'time mine':'time'"> 
 								
 								{{convertStringToDate(conversation.updated_at).toLocaleString().substring(0,16)}} 
 							</div>
