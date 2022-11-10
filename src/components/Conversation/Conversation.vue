@@ -37,6 +37,12 @@ const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
 })
 
+const typedEvent = () => {
+	if (!currentConversation.value) return
+
+	clientEmits.TypeConversationEmit(currentConversation.value.id)
+}
+
 watch(messages, () => {
 	if (!currentConversation.value || !messages.value) return
 	const messageId = messages.value[messages.value.length - 1]?.id
@@ -378,6 +384,7 @@ const messageSeen = (messageID: string) =>
 									<p>Edition</p>
 								</div>
 								<input
+									v-on:keyup="typedEvent"
 									v-on:keyup.enter="sendMessage()"
 									v-model="inputSentMessage"
 									class="prompt"
@@ -391,10 +398,6 @@ const messageSeen = (messageID: string) =>
 			</div>
 			<div class="conversation-sidebar" v-if="groupPanel">
 				<Group />
-			</div>
-
-			<div>
-				<search />
 			</div>
 		</div>
 	</div>
