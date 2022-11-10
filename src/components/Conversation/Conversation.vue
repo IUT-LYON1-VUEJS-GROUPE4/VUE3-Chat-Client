@@ -121,7 +121,11 @@ function titleConversation(conversation: Conversation): string {
 	if (conversation.title) return conversation.title
 
 	if (conversation.participants.length > 2) {
-		return `Groupe: ${conversation.participants.join(', ')}`
+		const participantsWithoutAuthenticatedUser = conversation.participants.filter(
+		(participant) => participant !== authenticatedUsername.value
+		)
+
+		return `Groupe: ${participantsWithoutAuthenticatedUser.join(', ')}`
 	}
 
 	const participant = conversation.participants.find(
@@ -197,7 +201,11 @@ function userIsOnLine(conversation: Conversation): boolean {
 	if (conversation.participants.length > 2) {
 		let returnState = false
 
-		conversation.participants.forEach((participant) => {
+		const participantsWithoutAuthenticatedUser = conversation.participants.filter(
+		(participant) => participant !== authenticatedUsername.value
+		)
+
+		participantsWithoutAuthenticatedUser.forEach((participant) => {
 			if (availableUsernames.value.includes(participant)) {
 				returnState = true
 			}

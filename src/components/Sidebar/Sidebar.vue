@@ -103,7 +103,11 @@ function userIsOnLine(conversation: Conversation): boolean {
 	if (conversation.participants.length > 2) {
 		let returnState = false
 
-		conversation.participants.forEach((participant) => {
+		const participantsWithoutAuthenticatedUser = conversation.participants.filter(
+		(participant) => participant !== authenticatedUsername.value
+		)
+
+		participantsWithoutAuthenticatedUser.forEach((participant) => {
 			if (availableUsernames.value.includes(participant)) {
 				returnState = true
 			}
