@@ -37,12 +37,7 @@ const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
 })
 
-watch(messages, () => {
-	if (!currentConversation.value || !messages.value) return
-	const messageId = messages.value[messages.value.length - 1]?.id
-	if (!messageId) return
-	clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
-})
+updateSeenMessage()
 
 async function sendMessage(): Promise<void> {
 	if (!currentConversation.value) return
@@ -52,8 +47,8 @@ async function sendMessage(): Promise<void> {
 		return
 	}
 
-	const temp = inputSentMessage.value;
-	inputSentMessage.value = '';
+	const temp = inputSentMessage.value
+	inputSentMessage.value = ''
 	if (replyMessage.value.user !== '') {
 		await clientEmits.replyMessage(
 			currentConversation.value.id,
@@ -62,11 +57,8 @@ async function sendMessage(): Promise<void> {
 		)
 		replyToMessage('', '', '')
 	} else {
-		
 		await clientEmits.postMessage(currentConversation.value.id, String(temp))
 	}
-	
-	
 }
 
 async function enterEditMode(
@@ -110,7 +102,26 @@ onUpdated(() => {
 
 watch(currentConversation, (/*newConversation, oldConversation*/) => {
 	scrollBottom()
+	updateSeenMessage()
 })
+
+function updateSeenMessage() {
+	if (
+		!currentConversation.value ||
+		!messages.value ||
+		authenticatedUsername.value === null
+	)
+		return
+	const messageId = messages.value[messages.value.length - 1]?.id
+	const userSeen = currentConversation.value.seen[authenticatedUsername.value]
+	if (userSeen === -1 || !messageId) return
+	if (
+		currentConversation.value.seen[authenticatedUsername.value].message_id !==
+		messageId
+	) {
+		clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
+	}
+}
 
 function scrollBottom() {
 	setTimeout(() => {
