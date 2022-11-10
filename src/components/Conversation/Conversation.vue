@@ -116,8 +116,8 @@ function updateSeenMessage() {
 	const userSeen = currentConversation.value.seen[authenticatedUsername.value]
 	if (userSeen === -1 || !messageId) return
 	if (
-		currentConversation.value.seen[authenticatedUsername.value].message_id !==
-		messageId
+		Object(currentConversation.value.seen[String(authenticatedUsername.value)])
+			.message_id !== messageId
 	) {
 		clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
 	}
