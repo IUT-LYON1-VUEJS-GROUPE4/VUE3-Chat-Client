@@ -266,6 +266,15 @@ const messageSeen = (messageID: string) =>
 		}
 		return viewArray
 	}).value
+
+const usersWritting = computed(() => {
+	return Object.entries(currentConversation.value?.typing || {})
+		.filter(([username]) => username !== authenticatedUsername.value)
+		.map(function (array) {
+			return array[0]
+		})
+		.join(', ')
+})
 </script>
 
 <template>
@@ -363,8 +372,10 @@ const messageSeen = (messageID: string) =>
 					</div>
 				</div>
 
-				<div class="typing">
-					<div class="wrapper">Alice est en train d'écrire...</div>
+				<div class="typing" v-if="currentConversation">
+					<div class="wrapper" v-if="usersWritting">
+						{{ usersWritting }} est en train d'écrire...
+					</div>
 				</div>
 				<div class="conversation-footer">
 					<div class="wrapper">
