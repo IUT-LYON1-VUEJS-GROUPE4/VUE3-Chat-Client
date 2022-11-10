@@ -180,7 +180,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 					</div>
 				</div>
 			</div>
-
+			
 			<div
 				v-for="conversation in filteredConversations"
 				class="conversation"
@@ -188,11 +188,15 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 					selected: conversation.id === conversationSelectedId,
 					new:
 						authenticatedUsername &&
-						!Object.keys(conversation.seen).includes(authenticatedUsername),
+						conversation.seen[authenticatedUsername] 
+					=== -1 ||
+						Object(conversation.seen[String(authenticatedUsername)])?.message_id 
+					!== conversation.messages[conversation.messages.length-1].id,
 				}"
 				:key="conversation.id"
 				:title="titleConversation(conversation)"
 				@click="openConversation(conversation.id)">
+				{{Object(conversation.seen[authenticatedUsername])}}
 				<a class="avatar">
 					<img
 						v-if="conversation.participants.length < 3"
