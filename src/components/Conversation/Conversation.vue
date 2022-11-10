@@ -52,7 +52,8 @@ async function sendMessage(): Promise<void> {
 		return
 	}
 
-	const temp = inputSentMessage.value
+	const temp = inputSentMessage.value;
+	inputSentMessage.value = '';
 	if (replyMessage.value.user !== '') {
 		await clientEmits.replyMessage(
 			currentConversation.value.id,
@@ -61,9 +62,11 @@ async function sendMessage(): Promise<void> {
 		)
 		replyToMessage('', '', '')
 	} else {
+		
 		await clientEmits.postMessage(currentConversation.value.id, String(temp))
 	}
-	inputSentMessage.value = ''
+	
+	
 }
 
 async function enterEditMode(
