@@ -43,12 +43,13 @@ const typedEvent = () => {
 	clientEmits.TypeConversationEmit(currentConversation.value.id)
 }
 
+/*
 watch(messages, () => {
 	if (!currentConversation.value || !messages.value) return
 	const messageId = messages.value[messages.value.length - 1]?.id
 	if (!messageId) return
 	clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
-})
+})*/
 
 async function sendMessage(): Promise<void> {
 	if (!currentConversation.value) return
@@ -267,6 +268,30 @@ const messageSeen = (messageID: string) =>
 		return viewArray
 	}).value
 
+const timeRef = ref(new Date())
+
+setInterval(() => (timeRef.value = new Date()), 1000)
+
+const usersWritting = computed(() => {
+	return Object.entries(currentConversation.value?.typing || {})
+		.filter(([username]) => username !== authenticatedUsername.value)
+		.filter(function ([username, dateString]) {
+			const now = timeRef.value.getTime()
+			const tenSecondsAgo = now - 10 * 1000
+
+			const lastActivityDate = new Date(dateString).getTime()
+
+			const activityAfterThirtySecondsAgo = tenSecondsAgo < lastActivityDate
+
+			return activityAfterThirtySecondsAgo
+		})
+		.map((array) => array[0])
+		.join(', ')
+})
+
+/* NE PAS SUPPRIMER !!! 
+Version sans le test avec la date donc le écris reste tout le temps
+
 const usersWritting = computed(() => {
 	return Object.entries(currentConversation.value?.typing || {})
 		.filter(([username]) => username !== authenticatedUsername.value)
@@ -275,6 +300,7 @@ const usersWritting = computed(() => {
 		})
 		.join(', ')
 })
+*/
 </script>
 
 <template>
