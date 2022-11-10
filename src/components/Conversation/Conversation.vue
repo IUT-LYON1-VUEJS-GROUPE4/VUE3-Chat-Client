@@ -43,13 +43,12 @@ const typedEvent = () => {
 	clientEmits.TypeConversationEmit(currentConversation.value.id)
 }
 
-/*
 watch(messages, () => {
 	if (!currentConversation.value || !messages.value) return
 	const messageId = messages.value[messages.value.length - 1]?.id
 	if (!messageId) return
 	clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
-})*/
+})
 
 async function sendMessage(): Promise<void> {
 	if (!currentConversation.value) return
@@ -272,35 +271,22 @@ const timeRef = ref(new Date())
 
 setInterval(() => (timeRef.value = new Date()), 1000)
 
-const usersWritting = computed(() => {
+const usersWriting = computed(() => {
 	return Object.entries(currentConversation.value?.typing || {})
 		.filter(([username]) => username !== authenticatedUsername.value)
-		.filter(function ([username, dateString]) {
+		.filter(function ([dateString]) {
 			const now = timeRef.value.getTime()
-			const tenSecondsAgo = now - 10 * 1000
+			const delayInSeconds = now - 10 * 1000
 
 			const lastActivityDate = new Date(dateString).getTime()
 
-			const activityAfterThirtySecondsAgo = tenSecondsAgo < lastActivityDate
+			const activityAfterDelay = delayInSeconds < lastActivityDate
 
-			return activityAfterThirtySecondsAgo
+			return activityAfterDelay
 		})
 		.map((array) => array[0])
 		.join(', ')
 })
-
-/* NE PAS SUPPRIMER !!! 
-Version sans le test avec la date donc le écris reste tout le temps
-
-const usersWritting = computed(() => {
-	return Object.entries(currentConversation.value?.typing || {})
-		.filter(([username]) => username !== authenticatedUsername.value)
-		.map(function (array) {
-			return array[0]
-		})
-		.join(', ')
-})
-*/
 </script>
 
 <template>
@@ -399,8 +385,8 @@ const usersWritting = computed(() => {
 				</div>
 
 				<div class="typing" v-if="currentConversation">
-					<div class="wrapper" v-if="usersWritting">
-						{{ usersWritting }} est en train d'écrire...
+					<div class="wrapper" v-if="usersWriting">
+						{{ usersWriting }} est en train d'écrire...
 					</div>
 				</div>
 				<div class="conversation-footer">
