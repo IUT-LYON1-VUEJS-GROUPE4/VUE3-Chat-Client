@@ -127,6 +127,14 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 		)
 	)
 }
+
+function conversationClassNewConditions(conversation : Conversation) :boolean {
+
+	return (authenticatedUsername.value &&
+			conversation.seen[String(authenticatedUsername.value)] === -1 ||
+			Object(conversation.seen[String(authenticatedUsername.value)])?.message_id 
+				!== conversation.messages[conversation.messages.length-1].id);
+}
 </script>
 
 <template>
@@ -186,17 +194,12 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 				class="conversation"
 				:class="{
 					selected: conversation.id === conversationSelectedId,
-					new:
-						authenticatedUsername &&
-						conversation.seen[authenticatedUsername] 
-					=== -1 ||
-						Object(conversation.seen[String(authenticatedUsername)])?.message_id 
-					!== conversation.messages[conversation.messages.length-1].id,
+					new:conversationClassNewConditions(conversation),
 				}"
 				:key="conversation.id"
 				:title="titleConversation(conversation)"
 				@click="openConversation(conversation.id)">
-				{{Object(conversation.seen[authenticatedUsername])}}
+			
 				<a class="avatar">
 					<img
 						v-if="conversation.participants.length < 3"
