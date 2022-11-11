@@ -104,7 +104,6 @@ export function listenHighLevelClientEvents() {
 		'@conversationTyped',
 		async ({ conversation_id, username, date }) => {
 			messengerStore.upsertConversationTyped(conversation_id, username, date)
-			console.log('@conversationTyped')
 		}
 	)
 

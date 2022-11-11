@@ -160,8 +160,6 @@ export const useMessengerStore = defineStore('messenger', () => {
 		username: string,
 		date: string
 	) {
-		console.log('conversationTyping0')
-
 		const conversationIndex = conversationsRef.value.findIndex(
 			(_conversation) => _conversation.id === conversation_id.toString()
 		)
