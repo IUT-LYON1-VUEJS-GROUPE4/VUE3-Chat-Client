@@ -16,10 +16,13 @@ const { logout } = authStore
 
 const searchInput = ref('')
 
-const { conversations, users, availableUsernames, authenticatedUsername } =
-	toRefs(messengerStore)
-
-const conversationSelectedId = ref('')
+const {
+	conversations,
+	users,
+	availableUsernames,
+	authenticatedUsername,
+	currentConversation,
+} = toRefs(messengerStore)
 
 function openCommunity() {
 	router.push({ name: 'Community' })
@@ -30,7 +33,6 @@ function openMessageSearch() {
 }
 
 function openConversation(id: Conversation['id']) {
-	conversationSelectedId.value = id
 	router.push({ name: 'Conversation', params: { id } })
 }
 
@@ -185,7 +187,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 				v-for="conversation in filteredConversations"
 				class="conversation"
 				:class="{
-					selected: conversation.id === conversationSelectedId,
+					selected: conversation.id === currentConversation.id,
 					new:
 						authenticatedUsername &&
 						!Object.keys(conversation.seen).includes(authenticatedUsername),
