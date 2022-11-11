@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import type {
 	ConversationCreatedEvent,
 	ConversationSeenEvent,
@@ -103,7 +104,7 @@ export function listenHighLevelClientEvents() {
 	chatClient.on<ConversationTypedEvent>(
 		'@conversationTyped',
 		async ({ conversation_id, username, date }) => {
-			//TODO
+			messengerStore.upsertConversationTyped(conversation_id, username, date)
 		}
 	)
 

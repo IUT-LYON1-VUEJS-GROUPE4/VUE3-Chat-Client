@@ -12,6 +12,7 @@ import type {
 	DeleteMessageEmit,
 	EditMessageEmit,
 	SeeConversationEmit,
+	TypeConversationEmit,
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useMessengerStore } from '@/stores/messenger'
@@ -164,6 +165,16 @@ export function useHighLevelClientEmits() {
 				{
 					conversation_id: conversationId,
 					message_id: messageId,
+				}
+			)
+			return response
+		},
+
+		async TypeConversationEmit(conversationId: string) {
+			const response = await chatClient.emit<TypeConversationEmit>(
+				'@typeConversation',
+				{
+					conversation_id: conversationId,
 				}
 			)
 			return response

@@ -24,9 +24,10 @@ const messengerStore = useMessengerStore()
 
 const {
 	users,
-	availableUsernames,
+	participantsAreOnline,
 	currentConversation,
 	authenticatedUsername,
+	currentConversationParticipants,
 } = toRefs(messengerStore)
 
 const router = useRouter()
@@ -37,12 +38,11 @@ const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
 })
 
-watch(messages, () => {
-	if (!currentConversation.value || !messages.value) return
-	const messageId = messages.value[messages.value.length - 1]?.id
-	if (!messageId) return
-	clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
-})
+const typedEvent = () => {
+	if (!currentConversation.value) return
+
+	clientEmits.TypeConversationEmit(currentConversation.value.id)
+}
 
 async function sendMessage(): Promise<void> {
 	if (!currentConversation.value) return
@@ -53,6 +53,7 @@ async function sendMessage(): Promise<void> {
 	}
 
 	const temp = inputSentMessage.value
+	inputSentMessage.value = ''
 	if (replyMessage.value.user !== '') {
 		await clientEmits.replyMessage(
 			currentConversation.value.id,
@@ -63,7 +64,6 @@ async function sendMessage(): Promise<void> {
 	} else {
 		await clientEmits.postMessage(currentConversation.value.id, String(temp))
 	}
-	inputSentMessage.value = ''
 }
 
 async function enterEditMode(
@@ -107,7 +107,26 @@ onUpdated(() => {
 
 watch(currentConversation, (/*newConversation, oldConversation*/) => {
 	scrollBottom()
+	updateSeenMessage()
 })
+
+function updateSeenMessage() {
+	if (
+		!currentConversation.value ||
+		!messages.value ||
+		authenticatedUsername.value === null
+	)
+		return
+	const messageId = messages.value[messages.value.length - 1]?.id
+	const userSeen = currentConversation.value.seen[authenticatedUsername.value]
+	if (userSeen === -1 || !messageId) return
+	if (
+		Object(currentConversation.value.seen[String(authenticatedUsername.value)])
+			.message_id !== messageId
+	) {
+		clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
+	}
+}
 
 function scrollBottom() {
 	setTimeout(() => {
@@ -121,7 +140,7 @@ function titleConversation(conversation: Conversation): string {
 	if (conversation.title) return conversation.title
 
 	if (conversation.participants.length > 2) {
-		return `Groupe: ${conversation.participants.join(', ')}`
+		return `Groupe: ${currentConversationParticipants.value.join(', ')}`
 	}
 
 	const participant = conversation.participants.find(
@@ -193,22 +212,6 @@ async function deleteMessage(messageId: string): Promise<void> {
 	await clientEmits.deleteMessage(currentConversation.value.id, messageId)
 }
 
-function userIsOnLine(conversation: Conversation): boolean {
-	if (conversation.participants.length > 2) {
-		let returnState = false
-
-		conversation.participants.forEach((participant) => {
-			if (availableUsernames.value.includes(participant)) {
-				returnState = true
-			}
-		})
-
-		return returnState
-	} else {
-		return availableUsernames.value.includes(conversation.participants[1])
-	}
-}
-
 function getClass(message: MessageType, messages: MessageType[]): string {
 	const c =
 		computed(() => {
@@ -260,6 +263,29 @@ const messageSeen = (messageID: string) =>
 		}
 		return viewArray
 	}).value
+
+const timeRef = ref(new Date())
+
+setInterval(() => (timeRef.value = new Date()), 1000)
+
+const usersWriting = computed(() => {
+	return Object.entries(currentConversation.value?.typing || {})
+		.filter(([username]) => username !== authenticatedUsername.value)
+		.filter(function ([dateString]) {
+			const now = timeRef.value.getTime()
+			const delayInSeconds = now - 10 * 1000
+
+			const lastActivityDate = new Date(dateString).getTime()
+
+			const activityAfterDelay = delayInSeconds < lastActivityDate
+
+			return activityAfterDelay
+		})
+		.map((array) => array[0])
+		.join(', ')
+})
+
+updateSeenMessage()
 </script>
 
 <template>
@@ -283,7 +309,7 @@ const messageSeen = (messageID: string) =>
 				<div class="ui compact">
 					<i
 						v-if="currentConversation"
-						:class="{ 'icon circle': userIsOnLine(currentConversation) }"></i>
+						:class="{ 'icon circle': participantsAreOnline }"></i>
 					<span v-if="currentConversation">
 						{{ titleConversation(currentConversation) }}
 					</span>
@@ -357,8 +383,10 @@ const messageSeen = (messageID: string) =>
 					</div>
 				</div>
 
-				<div class="typing">
-					<div class="wrapper">Alice est en train d'écrire...</div>
+				<div class="typing" v-if="currentConversation">
+					<div class="wrapper" v-if="usersWriting">
+						{{ usersWriting }} est en train d'écrire...
+					</div>
 				</div>
 				<div class="conversation-footer">
 					<div class="wrapper">
@@ -378,6 +406,7 @@ const messageSeen = (messageID: string) =>
 									<p>Edition</p>
 								</div>
 								<input
+									v-on:keyup="typedEvent"
 									v-on:keyup.enter="sendMessage()"
 									v-model="inputSentMessage"
 									class="prompt"
@@ -391,10 +420,6 @@ const messageSeen = (messageID: string) =>
 			</div>
 			<div class="conversation-sidebar" v-if="groupPanel">
 				<Group />
-			</div>
-
-			<div>
-				<search />
 			</div>
 		</div>
 	</div>

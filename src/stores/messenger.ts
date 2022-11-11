@@ -44,12 +44,47 @@ export const useMessengerStore = defineStore('messenger', () => {
 		)
 	})
 
+	/**
+	 * All current conversation participants except the current client user
+	 */
+	const currentConversationParticipants = computed(
+		() =>
+			currentConversation.value?.participants.filter(
+				(participant) => participant !== authenticatedUsername.value
+			) ?? []
+	)
+
+	/**
+	 * **ManyToMany Conversation**
+	 *
+	 * Current conversation participants are authenticated
+	 *
+	 * Need only one participant online to return true
+	 */
+	const participantsAreOnline = computed((): boolean => {
+		if (!currentConversation.value) return false
+		if (currentConversation.value.participants.length > 2) {
+			const allMember = currentConversationParticipants.value
+
+			for (let i = 0; i < allMember.length; i++) {
+				if (availableUsernames.value.includes(allMember[i])) return true
+			}
+
+			return false
+		} else
+			return availableUsernames.value.includes(
+				currentConversation.value.participants[1]
+			)
+	})
+
 	return {
 		authenticatedUsername,
 		users,
 		availableUsernames,
 		conversations,
 		currentConversation,
+		currentConversationParticipants,
+		participantsAreOnline,
 		setConversations,
 		setCurrentConversationId,
 		setUsers,
@@ -58,6 +93,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 		upsertMessageConversation,
 		upsertDeletedMessageConversation,
 		upsertUsersAvailable,
+		upsertConversationTyped,
 	}
 
 	// Actions
@@ -152,5 +188,21 @@ export const useMessengerStore = defineStore('messenger', () => {
 
 	function upsertUsersAvailable(usernames: string[]) {
 		availableUsernames.value = usernames
+	}
+
+	function upsertConversationTyped(
+		conversation_id: number,
+		username: string,
+		date: string
+	) {
+		const conversationIndex = conversationsRef.value.findIndex(
+			(_conversation) => _conversation.id === conversation_id.toString()
+		)
+
+		if (conversationIndex === -1) return
+
+		const conversationTyping = conversationsRef.value[conversationIndex].typing
+
+		conversationTyping[username] = date
 	}
 })

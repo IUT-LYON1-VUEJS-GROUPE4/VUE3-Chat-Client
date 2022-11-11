@@ -137,3 +137,7 @@ img + .bubble {
 	border-radius: 6px;
 	font-size: 80%;
 }
+
+.message .message-deleted {
+	font-style: italic;
+}
