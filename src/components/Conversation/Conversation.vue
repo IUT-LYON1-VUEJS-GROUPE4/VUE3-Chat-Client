@@ -24,9 +24,10 @@ const messengerStore = useMessengerStore()
 
 const {
 	users,
-	availableUsernames,
+	participantsAreOnline,
 	currentConversation,
 	authenticatedUsername,
+	currentConversationParticipants,
 } = toRefs(messengerStore)
 
 const router = useRouter()
@@ -43,13 +44,6 @@ const typedEvent = () => {
 	clientEmits.TypeConversationEmit(currentConversation.value.id)
 }
 
-watch(messages, () => {
-	if (!currentConversation.value || !messages.value) return
-	const messageId = messages.value[messages.value.length - 1]?.id
-	if (!messageId) return
-	clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
-})
-
 async function sendMessage(): Promise<void> {
 	if (!currentConversation.value) return
 
@@ -59,6 +53,7 @@ async function sendMessage(): Promise<void> {
 	}
 
 	const temp = inputSentMessage.value
+	inputSentMessage.value = ''
 	if (replyMessage.value.user !== '') {
 		await clientEmits.replyMessage(
 			currentConversation.value.id,
@@ -69,7 +64,6 @@ async function sendMessage(): Promise<void> {
 	} else {
 		await clientEmits.postMessage(currentConversation.value.id, String(temp))
 	}
-	inputSentMessage.value = ''
 }
 
 async function enterEditMode(
@@ -113,7 +107,26 @@ onUpdated(() => {
 
 watch(currentConversation, (/*newConversation, oldConversation*/) => {
 	scrollBottom()
+	updateSeenMessage()
 })
+
+function updateSeenMessage() {
+	if (
+		!currentConversation.value ||
+		!messages.value ||
+		authenticatedUsername.value === null
+	)
+		return
+	const messageId = messages.value[messages.value.length - 1]?.id
+	const userSeen = currentConversation.value.seen[authenticatedUsername.value]
+	if (userSeen === -1 || !messageId) return
+	if (
+		Object(currentConversation.value.seen[String(authenticatedUsername.value)])
+			.message_id !== messageId
+	) {
+		clientEmits.SeeConversationEmit(currentConversation.value.id, messageId)
+	}
+}
 
 function scrollBottom() {
 	setTimeout(() => {
@@ -127,7 +140,7 @@ function titleConversation(conversation: Conversation): string {
 	if (conversation.title) return conversation.title
 
 	if (conversation.participants.length > 2) {
-		return `Groupe: ${conversation.participants.join(', ')}`
+		return `Groupe: ${currentConversationParticipants.value.join(', ')}`
 	}
 
 	const participant = conversation.participants.find(
@@ -197,22 +210,6 @@ async function deleteMessage(messageId: string): Promise<void> {
 	if (!currentConversation.value) return
 
 	await clientEmits.deleteMessage(currentConversation.value.id, messageId)
-}
-
-function userIsOnLine(conversation: Conversation): boolean {
-	if (conversation.participants.length > 2) {
-		let returnState = false
-
-		conversation.participants.forEach((participant) => {
-			if (availableUsernames.value.includes(participant)) {
-				returnState = true
-			}
-		})
-
-		return returnState
-	} else {
-		return availableUsernames.value.includes(conversation.participants[1])
-	}
 }
 
 function getClass(message: MessageType, messages: MessageType[]): string {
@@ -287,6 +284,8 @@ const usersWriting = computed(() => {
 		.map((array) => array[0])
 		.join(', ')
 })
+
+updateSeenMessage()
 </script>
 
 <template>
@@ -310,7 +309,7 @@ const usersWriting = computed(() => {
 				<div class="ui compact">
 					<i
 						v-if="currentConversation"
-						:class="{ 'icon circle': userIsOnLine(currentConversation) }"></i>
+						:class="{ 'icon circle': participantsAreOnline }"></i>
 					<span v-if="currentConversation">
 						{{ titleConversation(currentConversation) }}
 					</span>

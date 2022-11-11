@@ -16,10 +16,13 @@ const { logout } = authStore
 
 const searchInput = ref('')
 
-const { conversations, users, availableUsernames, authenticatedUsername } =
-	toRefs(messengerStore)
-
-const conversationSelectedId = ref('')
+const {
+	conversations,
+	users,
+	participantsAreOnline,
+	authenticatedUsername,
+	currentConversation,
+} = toRefs(messengerStore)
 
 function openCommunity() {
 	router.push({ name: 'Community' })
@@ -30,7 +33,6 @@ function openMessageSearch() {
 }
 
 function openConversation(id: Conversation['id']) {
-	conversationSelectedId.value = id
 	router.push({ name: 'Conversation', params: { id } })
 }
 
@@ -99,22 +101,6 @@ function titleConversation(conversation: Conversation): string {
 	return 'Anonymous'
 }
 
-function userIsOnLine(conversation: Conversation): boolean {
-	if (conversation.participants.length > 2) {
-		let returnState = false
-
-		conversation.participants.forEach((participant) => {
-			if (availableUsernames.value.includes(participant)) {
-				returnState = true
-			}
-		})
-
-		return returnState
-	} else {
-		return availableUsernames.value.includes(conversation.participants[1])
-	}
-}
-
 function sortConversations(conversations: Conversation[]): Conversation[] {
 	return conversations.sort((a, b) =>
 		(b.messages.length === 0
@@ -125,6 +111,16 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 				? a.updated_at
 				: a.messages[a.messages.length - 1].posted_at
 		)
+	)
+}
+
+function conversationClassNewConditions(conversation: Conversation): boolean {
+	return (
+		(authenticatedUsername.value &&
+			conversation.seen[String(authenticatedUsername.value)] === -1) ||
+		Object(conversation.seen[String(authenticatedUsername.value)])
+			?.message_id !==
+			conversation.messages[conversation.messages.length - 1].id
 	)
 }
 </script>
@@ -185,10 +181,8 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 				v-for="conversation in filteredConversations"
 				class="conversation"
 				:class="{
-					selected: conversation.id === conversationSelectedId,
-					new:
-						authenticatedUsername &&
-						!Object.keys(conversation.seen).includes(authenticatedUsername),
+					selected: conversation.id === currentConversation?.id,
+					new: conversationClassNewConditions(conversation),
 				}"
 				:key="conversation.id"
 				:title="titleConversation(conversation)"
@@ -206,7 +200,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 					<div class="metadata">
 						<div class="title">
 							<i
-								v-if="userIsOnLine(conversation)"
+								v-if="participantsAreOnline"
 								class="ui small icon circle green"></i>
 							{{ titleConversation(conversation) }}
 						</div>
