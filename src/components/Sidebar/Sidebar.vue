@@ -129,6 +129,16 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 		)
 	)
 }
+
+function conversationClassNewConditions(conversation: Conversation): boolean {
+	return (
+		(authenticatedUsername.value &&
+			conversation.seen[String(authenticatedUsername.value)] === -1) ||
+		Object(conversation.seen[String(authenticatedUsername.value)])
+			?.message_id !==
+			conversation.messages[conversation.messages.length - 1].id
+	)
+}
 </script>
 
 <template>
@@ -188,9 +198,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 				class="conversation"
 				:class="{
 					selected: conversation.id === currentConversation.id,
-					new:
-						authenticatedUsername &&
-						!Object.keys(conversation.seen).includes(authenticatedUsername),
+					new: conversationClassNewConditions(conversation),
 				}"
 				:key="conversation.id"
 				:title="titleConversation(conversation)"
