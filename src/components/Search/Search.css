@@ -39,8 +39,6 @@
 }
 
 .avatar {
-
-	
 	width: 40px;
 	height: 40px;
 	border-radius: 20px;
@@ -53,16 +51,11 @@
 	margin-right: 10px;
 }
 
-
-
 .conversation span {
 	font-weight: bold;
 	font-size: 20px;
 	line-height: 40px;
-	
 }
-
-
 
 .message {
 	display: flex;
@@ -73,16 +66,15 @@
 .time {
 	width: 150;
 	display: block;
-	
+
 	margin: 0 10px 0 50px;
 }
 
-.time.mine{
+.time.mine {
 	width: 80px;
 	display: block;
 	white-space: nowrap;
 	margin: 0 50px 0 10px;
-
 }
 
 .bubble {
