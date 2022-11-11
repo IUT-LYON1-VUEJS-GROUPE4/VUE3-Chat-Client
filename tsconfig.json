@@ -8,7 +8,8 @@
         },
         "noEmit": true,
         "strict": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "lib": ["ESNext", "DOM", "DOM.Iterable"]
     },
     "references": [
         {

@@ -93,6 +93,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 		upsertMessageConversation,
 		upsertDeletedMessageConversation,
 		upsertUsersAvailable,
+		upsertConversationTyped,
 	}
 
 	// Actions
@@ -187,5 +188,21 @@ export const useMessengerStore = defineStore('messenger', () => {
 
 	function upsertUsersAvailable(usernames: string[]) {
 		availableUsernames.value = usernames
+	}
+
+	function upsertConversationTyped(
+		conversation_id: number,
+		username: string,
+		date: string
+	) {
+		const conversationIndex = conversationsRef.value.findIndex(
+			(_conversation) => _conversation.id === conversation_id.toString()
+		)
+
+		if (conversationIndex === -1) return
+
+		const conversationTyping = conversationsRef.value[conversationIndex].typing
+
+		conversationTyping[username] = date
 	}
 })

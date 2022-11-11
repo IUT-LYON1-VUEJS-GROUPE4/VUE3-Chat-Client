@@ -38,6 +38,12 @@ const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
 })
 
+const typedEvent = () => {
+	if (!currentConversation.value) return
+
+	clientEmits.TypeConversationEmit(currentConversation.value.id)
+}
+
 async function sendMessage(): Promise<void> {
 	if (!currentConversation.value) return
 
@@ -64,7 +70,6 @@ async function enterEditMode(
 	messageId: string,
 	messageContent: string
 ): Promise<void> {
-
 	isEditMessage.value = true
 	inputSentMessage.value = messageContent
 	idMessageToEdit.value = messageId
@@ -135,9 +140,7 @@ function titleConversation(conversation: Conversation): string {
 	if (conversation.title) return conversation.title
 
 	if (conversation.participants.length > 2) {
-		return `Groupe: ${currentConversationParticipants.value.join(
-			', '
-		)}`
+		return `Groupe: ${currentConversationParticipants.value.join(', ')}`
 	}
 
 	const participant = conversation.participants.find(
@@ -261,6 +264,27 @@ const messageSeen = (messageID: string) =>
 		return viewArray
 	}).value
 
+const timeRef = ref(new Date())
+
+setInterval(() => (timeRef.value = new Date()), 1000)
+
+const usersWriting = computed(() => {
+	return Object.entries(currentConversation.value?.typing || {})
+		.filter(([username]) => username !== authenticatedUsername.value)
+		.filter(function ([dateString]) {
+			const now = timeRef.value.getTime()
+			const delayInSeconds = now - 10 * 1000
+
+			const lastActivityDate = new Date(dateString).getTime()
+
+			const activityAfterDelay = delayInSeconds < lastActivityDate
+
+			return activityAfterDelay
+		})
+		.map((array) => array[0])
+		.join(', ')
+})
+
 updateSeenMessage()
 </script>
 
@@ -359,8 +383,10 @@ updateSeenMessage()
 					</div>
 				</div>
 
-				<div class="typing">
-					<div class="wrapper">Alice est en train d'écrire...</div>
+				<div class="typing" v-if="currentConversation">
+					<div class="wrapper" v-if="usersWriting">
+						{{ usersWriting }} est en train d'écrire...
+					</div>
 				</div>
 				<div class="conversation-footer">
 					<div class="wrapper">
@@ -380,6 +406,7 @@ updateSeenMessage()
 									<p>Edition</p>
 								</div>
 								<input
+									v-on:keyup="typedEvent"
 									v-on:keyup.enter="sendMessage()"
 									v-model="inputSentMessage"
 									class="prompt"
@@ -393,10 +420,6 @@ updateSeenMessage()
 			</div>
 			<div class="conversation-sidebar" v-if="groupPanel">
 				<Group />
-			</div>
-
-			<div>
-				<search />
 			</div>
 		</div>
 	</div>

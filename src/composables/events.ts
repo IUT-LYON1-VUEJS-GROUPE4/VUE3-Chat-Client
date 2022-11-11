@@ -13,7 +13,7 @@ import type {
 	ParticipantNicknameSetEvent,
 	ParticipantRemovedEvent,
 	UserCreatedEvent,
-	UsersAvailableEvent,
+	UsersAvailableEvent
 } from '@/client/types/events'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useMessengerStore } from '@/stores/messenger'
@@ -103,7 +103,7 @@ export function listenHighLevelClientEvents() {
 	chatClient.on<ConversationTypedEvent>(
 		'@conversationTyped',
 		async ({ conversation_id, username, date }) => {
-			//TODO
+			messengerStore.upsertConversationTyped(conversation_id, username, date)
 		}
 	)
 
