@@ -73,6 +73,7 @@ async function enterEditMode(
 	messageId: string,
 	messageContent: string
 ): Promise<void> {
+	
 	isEditMessage.value = true
 	inputSentMessage.value = messageContent
 	idMessageToEdit.value = messageId
