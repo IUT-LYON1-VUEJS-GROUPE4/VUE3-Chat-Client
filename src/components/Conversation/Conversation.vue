@@ -37,8 +37,6 @@ const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
 })
 
-updateSeenMessage()
-
 async function sendMessage(): Promise<void> {
 	if (!currentConversation.value) return
 
@@ -274,6 +272,8 @@ const messageSeen = (messageID: string) =>
 		}
 		return viewArray
 	}).value
+
+updateSeenMessage()
 </script>
 
 <template>
