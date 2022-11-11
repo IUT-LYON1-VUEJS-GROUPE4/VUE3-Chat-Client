@@ -44,12 +44,47 @@ export const useMessengerStore = defineStore('messenger', () => {
 		)
 	})
 
+	/**
+	 * All current conversation participants except the current client user
+	 */
+	const currentConversationParticipants = computed(
+		() =>
+			currentConversation.value?.participants.filter(
+				(participant) => participant !== authenticatedUsername.value
+			) ?? []
+	)
+
+	/**
+	 * **ManyToMany Conversation**
+	 *
+	 * Current conversation participants are authenticated
+	 *
+	 * Need only one participant online to return true
+	 */
+	const participantsAreOnline = computed((): boolean => {
+		if (!currentConversation.value) return false
+		if (currentConversation.value.participants.length > 2) {
+			const allMember = currentConversationParticipants.value
+
+			for (let i = 0; i < allMember.length; i++) {
+				if (availableUsernames.value.includes(allMember[i])) return true
+			}
+
+			return false
+		} else
+			return availableUsernames.value.includes(
+				currentConversation.value.participants[1]
+			)
+	})
+
 	return {
 		authenticatedUsername,
 		users,
 		availableUsernames,
 		conversations,
 		currentConversation,
+		currentConversationParticipants,
+		participantsAreOnline,
 		setConversations,
 		setCurrentConversationId,
 		setUsers,

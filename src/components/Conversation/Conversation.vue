@@ -24,9 +24,10 @@ const messengerStore = useMessengerStore()
 
 const {
 	users,
-	availableUsernames,
+	participantsAreOnline,
 	currentConversation,
 	authenticatedUsername,
+	currentConversationParticipants,
 } = toRefs(messengerStore)
 
 const router = useRouter()
@@ -121,11 +122,9 @@ function titleConversation(conversation: Conversation): string {
 	if (conversation.title) return conversation.title
 
 	if (conversation.participants.length > 2) {
-		const participantsWithoutAuthenticatedUser = conversation.participants.filter(
-		(participant) => participant !== authenticatedUsername.value
-		)
-
-		return `Groupe: ${participantsWithoutAuthenticatedUser.join(', ')}`
+		return `Groupe: ${currentConversationParticipants.value.join(
+			', '
+		)}`
 	}
 
 	const participant = conversation.participants.find(
@@ -195,26 +194,6 @@ async function deleteMessage(messageId: string): Promise<void> {
 	if (!currentConversation.value) return
 
 	await clientEmits.deleteMessage(currentConversation.value.id, messageId)
-}
-
-function userIsOnLine(conversation: Conversation): boolean {
-	if (conversation.participants.length > 2) {
-		let returnState = false
-
-		const participantsWithoutAuthenticatedUser = conversation.participants.filter(
-		(participant) => participant !== authenticatedUsername.value
-		)
-
-		participantsWithoutAuthenticatedUser.forEach((participant) => {
-			if (availableUsernames.value.includes(participant)) {
-				returnState = true
-			}
-		})
-
-		return returnState
-	} else {
-		return availableUsernames.value.includes(conversation.participants[1])
-	}
 }
 
 function getClass(message: MessageType, messages: MessageType[]): string {
@@ -291,7 +270,7 @@ const messageSeen = (messageID: string) =>
 				<div class="ui compact">
 					<i
 						v-if="currentConversation"
-						:class="{ 'icon circle': userIsOnLine(currentConversation) }"></i>
+						:class="{ 'icon circle': participantsAreOnline }"></i>
 					<span v-if="currentConversation">
 						{{ titleConversation(currentConversation) }}
 					</span>

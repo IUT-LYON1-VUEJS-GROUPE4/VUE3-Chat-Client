@@ -16,7 +16,7 @@ const { logout } = authStore
 
 const searchInput = ref('')
 
-const { conversations, users, availableUsernames, authenticatedUsername } =
+const { conversations, users, participantsAreOnline, authenticatedUsername } =
 	toRefs(messengerStore)
 
 const conversationSelectedId = ref('')
@@ -97,26 +97,6 @@ function titleConversation(conversation: Conversation): string {
 	}
 
 	return 'Anonymous'
-}
-
-function userIsOnLine(conversation: Conversation): boolean {
-	if (conversation.participants.length > 2) {
-		let returnState = false
-
-		const participantsWithoutAuthenticatedUser = conversation.participants.filter(
-		(participant) => participant !== authenticatedUsername.value
-		)
-
-		participantsWithoutAuthenticatedUser.forEach((participant) => {
-			if (availableUsernames.value.includes(participant)) {
-				returnState = true
-			}
-		})
-
-		return returnState
-	} else {
-		return availableUsernames.value.includes(conversation.participants[1])
-	}
 }
 
 function sortConversations(conversations: Conversation[]): Conversation[] {
@@ -210,7 +190,7 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 					<div class="metadata">
 						<div class="title">
 							<i
-								v-if="userIsOnLine(conversation)"
+								v-if="participantsAreOnline"
 								class="ui small icon circle green"></i>
 							{{ titleConversation(conversation) }}
 						</div>
