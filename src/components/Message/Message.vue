@@ -61,9 +61,9 @@ const editMessage = () => emit('edit-message')
 			<p v-if="props.message.reply_to" class="reply_content">
 				{{ props.message.reply_to.content }}
 			</p>
-            <p :class="{ 'message-deleted' : props.message.deleted }">
-                {{ props.message.deleted ? 'Message supprimé' : props.message.content }}
-            </p>
+			<p :class="{ 'message-deleted': props.message.deleted }">
+				{{ props.message.deleted ? 'Message supprimé' : props.message.content }}
+			</p>
 		</div>
 		<div class="reacts">
 			<span v-for="react in reactions" :key="react[0]" class="circular icon">
@@ -96,9 +96,9 @@ const editMessage = () => emit('edit-message')
 			<p v-if="props.message.reply_to" class="reply_content">
 				{{ props.message.reply_to.content }}
 			</p>
-            <p :class="{ 'message-deleted' : props.message.deleted }">
-                {{ props.message.deleted ? 'Message supprimé' : props.message.content }}
-            </p>
+			<p :class="{ 'message-deleted': props.message.deleted }">
+				{{ props.message.deleted ? 'Message supprimé' : props.message.content }}
+			</p>
 		</div>
 		<div class="reacts">
 			<span v-for="react in reactions" :key="react[0]" class="circular icon">

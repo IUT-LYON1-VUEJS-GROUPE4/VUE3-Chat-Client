@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import type {
 	ConversationCreatedEvent,
 	ConversationSeenEvent,
@@ -13,7 +14,7 @@ import type {
 	ParticipantNicknameSetEvent,
 	ParticipantRemovedEvent,
 	UserCreatedEvent,
-	UsersAvailableEvent
+	UsersAvailableEvent,
 } from '@/client/types/events'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useMessengerStore } from '@/stores/messenger'
