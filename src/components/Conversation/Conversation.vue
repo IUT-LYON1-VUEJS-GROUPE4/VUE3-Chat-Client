@@ -60,6 +60,7 @@ async function sendMessage(): Promise<void> {
 			replyMessage.value.messageId,
 			String(temp)
 		)
+		updateSeenMessage()
 		replyToMessage('', '', '')
 	} else {
 		await clientEmits.postMessage(currentConversation.value.id, String(temp))
