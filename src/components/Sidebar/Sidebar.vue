@@ -17,9 +17,9 @@ const { logout } = authStore
 const searchInput = ref('')
 
 const {
+	availableUsernames,
 	conversations,
 	users,
-	participantsAreOnline,
 	authenticatedUsername,
 	currentConversation,
 } = toRefs(messengerStore)
@@ -123,6 +123,19 @@ function conversationClassNewConditions(conversation: Conversation): boolean {
 			conversation.messages[conversation.messages.length - 1].id
 	)
 }
+
+function isOnlineConversation(participants: string[]): boolean {
+	participants = participants.filter(
+		(participant) => participant !== authenticatedUsername.value
+	)
+	let participantIsOnline = false
+	participants.forEach((participant: string) => {
+		if (availableUsernames.value.includes(participant)) {
+			participantIsOnline = true
+		}
+	})
+	return participantIsOnline
+}
 </script>
 
 <template>
@@ -200,7 +213,7 @@ function conversationClassNewConditions(conversation: Conversation): boolean {
 					<div class="metadata">
 						<div class="title">
 							<i
-								v-if="participantsAreOnline"
+								v-if="isOnlineConversation(conversation.participants)"
 								class="ui small icon circle green"></i>
 							{{ titleConversation(conversation) }}
 						</div>
