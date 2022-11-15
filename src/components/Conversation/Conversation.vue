@@ -214,7 +214,7 @@ async function deleteMessage(messageId: string): Promise<void> {
 }
 
 function getClass(message: MessageType, messages: MessageType[]): string {
-	const c =
+	let c =
 		computed(() => {
 			const index = messages.findIndex((_message) => _message.id === message.id)
 			const previousMessage = messages[index - 1]
@@ -243,6 +243,15 @@ function getClass(message: MessageType, messages: MessageType[]): string {
 				result = 'middle'
 			return result
 		}).value ?? 'middle'
+
+	if (currentConversation.value?.theme === 'BLUE') {
+		c += ' blue'
+	} else if (currentConversation.value?.theme === 'RED') {
+		c += ' red'
+	} else {
+		c += ' rainbow'
+	}
+
 	return c
 }
 
@@ -286,6 +295,14 @@ const usersWriting = computed(() => {
 		.join(', ')
 })
 
+function updateTheme(id: string, theme: 'BLUE' | 'RED' | 'RAINBOW'): void {
+	clientEmits.setConversationTheme(id, theme)
+}
+
+function themeSelected(theme: 'BLUE' | 'RED' | 'RAINBOW'): boolean {
+	return currentConversation.value?.theme === theme
+}
+
 updateSeenMessage()
 </script>
 
@@ -319,7 +336,11 @@ updateSeenMessage()
 						<i class="vertical ellipsis icon"></i>
 
 						<div class="menu">
-							<div v-if="true" class="item">
+							<div
+								v-if="true"
+								class="item"
+								data-bs-toggle="modal"
+								data-bs-target="#changeThemeModal">
 								<i class="ui icon paint brush"></i>
 								Modifier le thème
 							</div>
@@ -421,6 +442,56 @@ updateSeenMessage()
 			</div>
 			<div class="conversation-sidebar" v-if="groupPanel">
 				<Group />
+			</div>
+		</div>
+	</div>
+
+	<div
+		class="modal fade"
+		id="changeThemeModal"
+		tabindex="-1"
+		aria-labelledby="staticBackdropLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="staticBackdropLabel">
+						Changer le thème
+					</h1>
+					<button
+						type="button"
+						class="btn-close"
+						data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body d-flex justify-content-around">
+					<div
+						@click="updateTheme(currentConversation.id, 'BLUE')"
+						class="circle-theme blue"
+						:class="{
+							'theme-selected': themeSelected('BLUE'),
+						}"></div>
+					<div
+						@click="updateTheme(currentConversation.id, 'RED')"
+						class="circle-theme red"
+						:class="{
+							'theme-selected': themeSelected('RED'),
+						}"></div>
+					<div
+						@click="updateTheme(currentConversation.id, 'RAINBOW')"
+						class="circle-theme rainbow"
+						:class="{
+							'theme-selected': themeSelected('RAINBOW'),
+						}"></div>
+				</div>
+				<div class="modal-footer">
+					<button
+						type="button"
+						class="btn btn-secondary"
+						data-bs-dismiss="modal">
+						Fermer
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
