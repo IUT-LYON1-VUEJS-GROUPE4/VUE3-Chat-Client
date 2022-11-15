@@ -13,6 +13,7 @@ import type {
 	EditMessageEmit,
 	SeeConversationEmit,
 	TypeConversationEmit,
+	SetConversationThemeEmit,
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useMessengerStore } from '@/stores/messenger'
@@ -175,6 +176,20 @@ export function useHighLevelClientEmits() {
 				'@typeConversation',
 				{
 					conversation_id: conversationId,
+				}
+			)
+			return response
+		},
+
+		async setConversationTheme(
+			conversationId: string,
+			theme: 'BLUE' | 'RED' | 'RAINBOW'
+		) {
+			const response = await chatClient.emit<SetConversationThemeEmit>(
+				'@setConversationTheme',
+				{
+					conversation_id: conversationId,
+					theme: theme,
 				}
 			)
 			return response
