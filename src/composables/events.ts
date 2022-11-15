@@ -118,7 +118,7 @@ export function listenHighLevelClientEvents() {
 	chatClient.on<ConversationTitleSetEvent>(
 		'@conversationTitleSet',
 		async ({ conversation_id, title }) => {
-			//TODO
+			messengerStore.upsertConversationTitle(conversation_id, title)
 		}
 	)
 

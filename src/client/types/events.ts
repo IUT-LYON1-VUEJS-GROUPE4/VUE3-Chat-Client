@@ -107,7 +107,7 @@ export interface ConversationThemeSetEvent extends Event {
 export interface ConversationTitleSetEvent extends Event {
 	event: '@conversationTitleSet'
 	payload: {
-		conversation_id: number
+		conversation_id: string
 		title: string
 	}
 }
