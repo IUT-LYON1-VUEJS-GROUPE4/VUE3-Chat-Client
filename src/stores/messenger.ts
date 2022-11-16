@@ -144,10 +144,21 @@ export const useMessengerStore = defineStore('messenger', () => {
 		}
 	}
 
-	function upsertMessageConversation(conversationId: string, message: Message) {
+	function upsertMessageConversation(
+		conversationId: string,
+		message: Message,
+		type: 'react' | 'edit' | 'send'
+	) {
 		const conversationIndex = conversationsRef.value.findIndex(
 			(_conversation) => _conversation.id === conversationId
 		)
+
+		if (currentConversation.value?.id !== conversationId && type === 'send') {
+			const audio = new Audio(
+				'https://us-tuna-sounds-files.voicemod.net/e9229244-01da-412e-a7f0-3df937d5010f-1655989344407.mp3'
+			)
+			audio.play()
+		}
 
 		if (conversationIndex !== -1) {
 			const messageIndex = conversationsRef.value[
