@@ -111,7 +111,7 @@ export function listenHighLevelClientEvents() {
 	chatClient.on<ConversationThemeSetEvent>(
 		'@conversationThemeSet',
 		async ({ conversation_id, theme }) => {
-			//TODO
+			messengerStore.upsertConversationTheme(conversation_id, theme)
 		}
 	)
 

@@ -99,8 +99,8 @@ export interface ConversationTypedEvent extends Event {
 export interface ConversationThemeSetEvent extends Event {
 	event: '@conversationThemeSet'
 	payload: {
-		conversation_id: number
-		theme: string
+		conversation_id: string
+		theme: 'BLUE' | 'RED' | 'RAINBOW'
 	}
 }
 
@@ -115,7 +115,7 @@ export interface ConversationTitleSetEvent extends Event {
 export interface ParticipantNicknameSetEvent extends Event {
 	event: '@participantNicknameSet'
 	payload: {
-		conversation_id: number
+		conversation_id: string
 		participant: string
 		nickname: string
 	}

@@ -1,18 +1,20 @@
 import { useRouter } from 'vue-router'
 import type {
-    CreateManyToManyConversationEmit,
-    GetConversationsEmit,
-    GetOrCreateOneToOneConversationEmit,
-    GetUsersEmit,
-    PostMessageEmit,
-    AddParticipantEmit,
-    RemoveParticipantEmit,
-    ReactMessageEmit,
-    ReplyMessageEmit,
-    DeleteMessageEmit,
-    EditMessageEmit,
-    SeeConversationEmit,
-    TypeConversationEmit, SetConversationTitleEmit,
+	CreateManyToManyConversationEmit,
+	GetConversationsEmit,
+	GetOrCreateOneToOneConversationEmit,
+	GetUsersEmit,
+	PostMessageEmit,
+	AddParticipantEmit,
+	RemoveParticipantEmit,
+	ReactMessageEmit,
+	ReplyMessageEmit,
+	DeleteMessageEmit,
+	EditMessageEmit,
+	SeeConversationEmit,
+	TypeConversationEmit,
+	SetConversationTitleEmit,
+	SetConversationThemeEmit,
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useMessengerStore } from '@/stores/messenger'
@@ -186,6 +188,20 @@ export function useHighLevelClientEmits() {
 				{
 					conversation_id: conversationId,
 					title: newTitle,
+				}
+			)
+			return response
+		},
+
+		async setConversationTheme(
+			conversationId: string,
+			theme: 'BLUE' | 'RED' | 'RAINBOW'
+		) {
+			const response = await chatClient.emit<SetConversationThemeEmit>(
+				'@setConversationTheme',
+				{
+					conversation_id: conversationId,
+					theme: theme,
 				}
 			)
 			return response
