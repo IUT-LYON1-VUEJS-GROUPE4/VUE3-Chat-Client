@@ -303,6 +303,46 @@ function themeSelected(theme: 'BLUE' | 'RED' | 'RAINBOW'): boolean {
 	return currentConversation.value?.theme === theme
 }
 
+function muteConversation(): void {
+	if (!currentConversation.value) return
+
+	let conversationsMute = []
+	const json = localStorage.getItem('conversationMuteId')
+
+	if (json == null) {
+		conversationsMute.push(currentConversation.value.id)
+	} else {
+		conversationsMute = JSON.parse(json)
+		if (!conversationsMute.includes(currentConversation.value.id)) {
+			conversationsMute.push(currentConversation.value.id)
+		}
+	}
+
+	localStorage.setItem('conversationMuteId', JSON.stringify(conversationsMute))
+}
+
+function unmuteConversation(): void {
+	const json = localStorage.getItem('conversationMuteId')
+
+	if (json == null || !currentConversation.value) return
+	const conversationsMute = JSON.parse(json)
+	if (conversationsMute.includes(currentConversation.value.id)) {
+		const index = conversationsMute.indexOf(currentConversation.value.id)
+		conversationsMute.splice(index, 1)
+	}
+	localStorage.setItem('conversationMuteId', JSON.stringify(conversationsMute))
+}
+
+function isMuteConversation(): boolean {
+	const json = localStorage.getItem('conversationMuteId')
+	if (json == null || !currentConversation.value) return false
+	const conversationsMute = JSON.parse(json)
+
+	if (conversationsMute.includes(currentConversation.value.id)) return true
+
+	return false
+}
+
 updateSeenMessage()
 </script>
 
@@ -348,11 +388,17 @@ updateSeenMessage()
 								<i class="ui icon edit"></i>
 								Modifier le titre
 							</div>
-							<div v-if="true" class="item">
+							<div
+								v-if="!isMuteConversation()"
+								class="item"
+								@click="muteConversation()">
 								<i class="ui icon volume bell slash"></i>
 								Mettre en sourdine
 							</div>
-							<div v-if="true" class="item">
+							<div
+								v-if="isMuteConversation()"
+								class="item"
+								@click="unmuteConversation()">
 								<i class="ui icon volume bell"></i>
 								Rétablir les notifications
 							</div>
