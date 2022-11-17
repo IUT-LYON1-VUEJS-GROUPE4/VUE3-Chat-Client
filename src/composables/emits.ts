@@ -13,6 +13,7 @@ import type {
 	EditMessageEmit,
 	SeeConversationEmit,
 	TypeConversationEmit,
+	SetConversationTitleEmit,
 	SetConversationThemeEmit,
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
@@ -176,6 +177,17 @@ export function useHighLevelClientEmits() {
 				'@typeConversation',
 				{
 					conversation_id: conversationId,
+				}
+			)
+			return response
+		},
+
+		async SetConversationTitleEmit(conversationId: string, newTitle: string) {
+			const response = await chatClient.emit<SetConversationTitleEmit>(
+				'@setConversationTitle',
+				{
+					conversation_id: conversationId,
+					title: newTitle,
 				}
 			)
 			return response

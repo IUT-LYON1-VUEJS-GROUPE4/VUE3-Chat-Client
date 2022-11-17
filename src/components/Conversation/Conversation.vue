@@ -33,6 +33,7 @@ const {
 const router = useRouter()
 
 const inputSentMessage = ref('')
+const inputNewTitle = ref('')
 
 const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
@@ -295,6 +296,15 @@ const usersWriting = computed(() => {
 		.join(', ')
 })
 
+function updateTitle(): void {
+	if (inputNewTitle.value === '' || !currentConversation.value) return
+
+	clientEmits.SetConversationTitleEmit(
+		currentConversation.value.id,
+		inputNewTitle.value
+	)
+}
+
 function updateTheme(id: string, theme: 'BLUE' | 'RED' | 'RAINBOW'): void {
 	clientEmits.setConversationTheme(id, theme)
 }
@@ -344,7 +354,11 @@ updateSeenMessage()
 								<i class="ui icon paint brush"></i>
 								Modifier le thème
 							</div>
-							<div v-if="true" class="item">
+							<div
+								v-if="currentConversation?.participants.length > 2"
+								class="item"
+								data-bs-toggle="modal"
+								data-bs-target="#changeTitleModal">
 								<i class="ui icon edit"></i>
 								Modifier le titre
 							</div>
@@ -442,6 +456,47 @@ updateSeenMessage()
 			</div>
 			<div class="conversation-sidebar" v-if="groupPanel">
 				<Group />
+			</div>
+		</div>
+	</div>
+
+	<div
+		class="modal fade"
+		id="changeTitleModal"
+		tabindex="-1"
+		aria-labelledby="exampleModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="exampleModalLabel">
+						Modifier le nom de la conversation
+					</h1>
+					<button
+						type="button"
+						class="btn-close"
+						data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<input
+						v-on:keyup.enter="updateTitle()"
+						v-model="inputNewTitle"
+						class="form-control"
+						type="text"
+						placeholder="Nouveau titre" />
+				</div>
+				<div class="modal-footer">
+					<button
+						type="button"
+						class="btn btn-secondary"
+						data-bs-dismiss="modal">
+						Close
+					</button>
+					<button type="button" class="btn btn-primary" @click="updateTitle()">
+						Save changes
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
