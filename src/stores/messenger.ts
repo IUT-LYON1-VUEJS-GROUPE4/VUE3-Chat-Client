@@ -154,10 +154,18 @@ export const useMessengerStore = defineStore('messenger', () => {
 		)
 
 		if (currentConversation.value?.id !== conversationId && type === 'send') {
-			const audio = new Audio(
-				'https://us-tuna-sounds-files.voicemod.net/e9229244-01da-412e-a7f0-3df937d5010f-1655989344407.mp3'
-			)
-			audio.play()
+			const json = localStorage.getItem('conversationMuteId')
+			let conversationsMute = []
+			if (json != null) {
+				conversationsMute = JSON.parse(json)
+			}
+
+			if (!conversationsMute.includes(conversationId)) {
+				const audio = new Audio(
+					'https://us-tuna-sounds-files.voicemod.net/e9229244-01da-412e-a7f0-3df937d5010f-1655989344407.mp3'
+				)
+				audio.play()
+			}
 		}
 
 		if (conversationIndex !== -1) {
