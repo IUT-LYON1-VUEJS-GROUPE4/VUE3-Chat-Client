@@ -33,6 +33,7 @@ const {
 const router = useRouter()
 
 const inputSentMessage = ref('')
+const inputNewTitle = ref('')
 
 const messages = computed(() => {
 	return currentConversation.value?.messages ?? []
@@ -60,6 +61,7 @@ async function sendMessage(): Promise<void> {
 			replyMessage.value.messageId,
 			String(temp)
 		)
+		updateSeenMessage()
 		replyToMessage('', '', '')
 	} else {
 		await clientEmits.postMessage(currentConversation.value.id, String(temp))
@@ -213,7 +215,7 @@ async function deleteMessage(messageId: string): Promise<void> {
 }
 
 function getClass(message: MessageType, messages: MessageType[]): string {
-	const c =
+	let c =
 		computed(() => {
 			const index = messages.findIndex((_message) => _message.id === message.id)
 			const previousMessage = messages[index - 1]
@@ -242,6 +244,15 @@ function getClass(message: MessageType, messages: MessageType[]): string {
 				result = 'middle'
 			return result
 		}).value ?? 'middle'
+
+	if (currentConversation.value?.theme === 'BLUE') {
+		c += ' blue'
+	} else if (currentConversation.value?.theme === 'RED') {
+		c += ' red'
+	} else {
+		c += ' rainbow'
+	}
+
 	return c
 }
 
@@ -285,6 +296,63 @@ const usersWriting = computed(() => {
 		.join(', ')
 })
 
+function updateTitle(): void {
+	if (inputNewTitle.value === '' || !currentConversation.value) return
+
+	clientEmits.SetConversationTitleEmit(
+		currentConversation.value.id,
+		inputNewTitle.value
+	)
+}
+
+function updateTheme(id: string, theme: 'BLUE' | 'RED' | 'RAINBOW'): void {
+	clientEmits.setConversationTheme(id, theme)
+}
+
+function themeSelected(theme: 'BLUE' | 'RED' | 'RAINBOW'): boolean {
+	return currentConversation.value?.theme === theme
+}
+
+function muteConversation(): void {
+	if (!currentConversation.value) return
+
+	let conversationsMute = []
+	const json = localStorage.getItem('conversationMuteId')
+
+	if (json == null) {
+		conversationsMute.push(currentConversation.value.id)
+	} else {
+		conversationsMute = JSON.parse(json)
+		if (!conversationsMute.includes(currentConversation.value.id)) {
+			conversationsMute.push(currentConversation.value.id)
+		}
+	}
+
+	localStorage.setItem('conversationMuteId', JSON.stringify(conversationsMute))
+}
+
+function unmuteConversation(): void {
+	const json = localStorage.getItem('conversationMuteId')
+
+	if (json == null || !currentConversation.value) return
+	const conversationsMute = JSON.parse(json)
+	if (conversationsMute.includes(currentConversation.value.id)) {
+		const index = conversationsMute.indexOf(currentConversation.value.id)
+		conversationsMute.splice(index, 1)
+	}
+	localStorage.setItem('conversationMuteId', JSON.stringify(conversationsMute))
+}
+
+function isMuteConversation(): boolean {
+	const json = localStorage.getItem('conversationMuteId')
+	if (json == null || !currentConversation.value) return false
+	const conversationsMute = JSON.parse(json)
+
+	if (conversationsMute.includes(currentConversation.value.id)) return true
+
+	return false
+}
+
 updateSeenMessage()
 </script>
 
@@ -318,19 +386,33 @@ updateSeenMessage()
 						<i class="vertical ellipsis icon"></i>
 
 						<div class="menu">
-							<div v-if="true" class="item">
+							<div
+								v-if="true"
+								class="item"
+								data-bs-toggle="modal"
+								data-bs-target="#changeThemeModal">
 								<i class="ui icon paint brush"></i>
 								Modifier le thème
 							</div>
-							<div v-if="true" class="item">
+							<div
+								v-if="currentConversation?.participants.length > 2"
+								class="item"
+								data-bs-toggle="modal"
+								data-bs-target="#changeTitleModal">
 								<i class="ui icon edit"></i>
 								Modifier le titre
 							</div>
-							<div v-if="true" class="item">
+							<div
+								v-if="!isMuteConversation()"
+								class="item"
+								@click="muteConversation()">
 								<i class="ui icon volume bell slash"></i>
 								Mettre en sourdine
 							</div>
-							<div v-if="true" class="item">
+							<div
+								v-if="isMuteConversation()"
+								class="item"
+								@click="unmuteConversation()">
 								<i class="ui icon volume bell"></i>
 								Rétablir les notifications
 							</div>
@@ -420,6 +502,97 @@ updateSeenMessage()
 			</div>
 			<div class="conversation-sidebar" v-if="groupPanel">
 				<Group />
+			</div>
+		</div>
+	</div>
+
+	<div
+		class="modal fade"
+		id="changeTitleModal"
+		tabindex="-1"
+		aria-labelledby="exampleModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="exampleModalLabel">
+						Modifier le nom de la conversation
+					</h1>
+					<button
+						type="button"
+						class="btn-close"
+						data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<input
+						v-on:keyup.enter="updateTitle()"
+						v-model="inputNewTitle"
+						class="form-control"
+						type="text"
+						placeholder="Nouveau titre" />
+				</div>
+				<div class="modal-footer">
+					<button
+						type="button"
+						class="btn btn-secondary"
+						data-bs-dismiss="modal">
+						Close
+					</button>
+					<button type="button" class="btn btn-primary" @click="updateTitle()">
+						Save changes
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div
+		class="modal fade"
+		id="changeThemeModal"
+		tabindex="-1"
+		aria-labelledby="staticBackdropLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="staticBackdropLabel">
+						Changer le thème
+					</h1>
+					<button
+						type="button"
+						class="btn-close"
+						data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body d-flex justify-content-around">
+					<div
+						@click="updateTheme(currentConversation.id, 'BLUE')"
+						class="circle-theme blue"
+						:class="{
+							'theme-selected': themeSelected('BLUE'),
+						}"></div>
+					<div
+						@click="updateTheme(currentConversation.id, 'RED')"
+						class="circle-theme red"
+						:class="{
+							'theme-selected': themeSelected('RED'),
+						}"></div>
+					<div
+						@click="updateTheme(currentConversation.id, 'RAINBOW')"
+						class="circle-theme rainbow"
+						:class="{
+							'theme-selected': themeSelected('RAINBOW'),
+						}"></div>
+				</div>
+				<div class="modal-footer">
+					<button
+						type="button"
+						class="btn btn-secondary"
+						data-bs-dismiss="modal">
+						Fermer
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>

@@ -94,6 +94,8 @@ export const useMessengerStore = defineStore('messenger', () => {
 		upsertDeletedMessageConversation,
 		upsertUsersAvailable,
 		upsertConversationTyped,
+		upsertConversationTitle,
+		upsertConversationTheme,
 	}
 
 	// Actions
@@ -143,10 +145,29 @@ export const useMessengerStore = defineStore('messenger', () => {
 		}
 	}
 
-	function upsertMessageConversation(conversationId: string, message: Message) {
+	function upsertMessageConversation(
+		conversationId: string,
+		message: Message,
+		type: 'react' | 'edit' | 'send'
+	) {
 		const conversationIndex = conversationsRef.value.findIndex(
 			(_conversation) => _conversation.id === conversationId
 		)
+
+		if (currentConversation.value?.id !== conversationId && type === 'send') {
+			const json = localStorage.getItem('conversationMuteId')
+			let conversationsMute = []
+			if (json != null) {
+				conversationsMute = JSON.parse(json)
+			}
+
+			if (!conversationsMute.includes(conversationId)) {
+				const audio = new Audio(
+					'https://us-tuna-sounds-files.voicemod.net/e9229244-01da-412e-a7f0-3df937d5010f-1655989344407.mp3'
+				)
+				audio.play()
+			}
+		}
 
 		if (conversationIndex !== -1) {
 			const messageIndex = conversationsRef.value[
@@ -204,5 +225,28 @@ export const useMessengerStore = defineStore('messenger', () => {
 		const conversationTyping = conversationsRef.value[conversationIndex].typing
 
 		conversationTyping[username] = date
+	}
+
+	function upsertConversationTitle(conversation_id: string, title: string) {
+		const conversationIndex = conversationsRef.value.findIndex(
+			(_conversation) => _conversation.id === conversation_id
+		)
+
+		if (conversationIndex !== -1) {
+			conversationsRef.value[conversationIndex].title = title
+		}
+	}
+
+	function upsertConversationTheme(
+		conversation_id: string,
+		theme: 'BLUE' | 'RED' | 'RAINBOW'
+	) {
+		const conversationIndex = conversationsRef.value.findIndex(
+			(_conversation) => _conversation.id === conversation_id.toString()
+		)
+
+		if (conversationIndex !== -1) {
+			conversationsRef.value[conversationIndex].theme = theme
+		}
 	}
 })
