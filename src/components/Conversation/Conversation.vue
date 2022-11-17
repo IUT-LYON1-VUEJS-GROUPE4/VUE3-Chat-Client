@@ -322,21 +322,25 @@ function muteConversation(): void {
 }
 
 function unmuteConversation(): void {
-	if (!currentConversation.value) return
-
-	let conversationsMute = []
 	const json = localStorage.getItem('conversationMuteId')
 
-	if (json == null) return
-	else {
-		conversationsMute = JSON.parse(json)
-		if (conversationsMute.includes(currentConversation.value.id)) {
-			const index = conversationsMute.indexOf(currentConversation.value.id)
-			conversationsMute.splice(index, 1)
-		}
+	if (json == null || !currentConversation.value) return
+	const conversationsMute = JSON.parse(json)
+	if (conversationsMute.includes(currentConversation.value.id)) {
+		const index = conversationsMute.indexOf(currentConversation.value.id)
+		conversationsMute.splice(index, 1)
 	}
-
 	localStorage.setItem('conversationMuteId', JSON.stringify(conversationsMute))
+}
+
+function isMuteConversation(): boolean {
+	const json = localStorage.getItem('conversationMuteId')
+	if (json == null || !currentConversation.value) return false
+	const conversationsMute = JSON.parse(json)
+
+	if (conversationsMute.includes(currentConversation.value.id)) return true
+
+	return false
 }
 
 updateSeenMessage()
@@ -384,11 +388,17 @@ updateSeenMessage()
 								<i class="ui icon edit"></i>
 								Modifier le titre
 							</div>
-							<div v-if="true" class="item" @click="muteConversation()">
+							<div
+								v-if="!isMuteConversation()"
+								class="item"
+								@click="muteConversation()">
 								<i class="ui icon volume bell slash"></i>
 								Mettre en sourdine
 							</div>
-							<div v-if="true" class="item" @click="unmuteConversation()">
+							<div
+								v-if="isMuteConversation()"
+								class="item"
+								@click="unmuteConversation()">
 								<i class="ui icon volume bell"></i>
 								Rétablir les notifications
 							</div>
