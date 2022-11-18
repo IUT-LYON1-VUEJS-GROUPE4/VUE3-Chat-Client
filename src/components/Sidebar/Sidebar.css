@@ -222,3 +222,7 @@
 .blue.buttons button {
 	background: #0099ff !important;
 }
+
+.new-conv {
+	font-style: italic;
+}

@@ -231,7 +231,9 @@ function isOnlineConversation(participants: string[]): boolean {
 						</span>
 					</div>
 					<div class="metadata">
-						<div class="text">
+						<div
+							class="text"
+							:class="{ 'new-conv': conversation.messages.length === 0 }">
 							{{
 								conversation.messages.length === 0
 									? 'Nouvelle conversation'
