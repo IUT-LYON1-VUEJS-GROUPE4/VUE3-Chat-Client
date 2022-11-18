@@ -196,6 +196,7 @@ function isOnlineConversation(participants: string[]): boolean {
 				:class="{
 					selected: conversation.id === currentConversation?.id,
 					new: conversationClassNewConditions(conversation),
+					available: isOnlineConversation(conversation.participants),
 				}"
 				:key="conversation.id"
 				:title="titleConversation(conversation)"
@@ -206,7 +207,10 @@ function isOnlineConversation(participants: string[]): boolean {
 						:src="getProfilePicture(conversation.participants)"
 						:alt="`Photo de Conversation #${conversation.id}`" />
 					<span v-else data-v-73baddaf="">
-						<i data-v-73baddaf="" class="users icon"></i>
+						<i
+							data-v-73baddaf=""
+							class="users icon"
+							:class="{ new: conversation.messages.length === 0 }"></i>
 					</span>
 				</a>
 				<div class="content">
@@ -232,8 +236,10 @@ function isOnlineConversation(participants: string[]): boolean {
 					</div>
 					<div class="metadata">
 						<div
-							class="text"
-							:class="{ 'new-conv': conversation.messages.length === 0 }">
+							:class="{
+								'new-conv': conversation.messages.length === 0,
+								text: conversation.messages.length > 0,
+							}">
 							{{
 								conversation.messages.length === 0
 									? 'Nouvelle conversation'

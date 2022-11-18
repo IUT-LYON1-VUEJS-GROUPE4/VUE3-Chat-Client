@@ -149,9 +149,9 @@
 	color: black !important;
 }
 
-.conversation.new .avatar .icon {
+/* .conversation.new .avatar .icon {
 	color: white !important;
-}
+} */
 
 @media screen and (max-width: 800px) {
 	.conversation .content {
@@ -225,4 +225,10 @@
 
 .new-conv {
 	font-style: italic;
+    background: #0099ff;
+    color: white;
+    font-weight: bold;
+    padding: 2px;
+    padding-inline: 7px;
+    border-radius: 7px;
 }
