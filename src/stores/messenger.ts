@@ -95,6 +95,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 		upsertUsersAvailable,
 		upsertConversationTyped,
 		upsertConversationTheme,
+		upsertConversationNickname,
 	}
 
 	// Actions
@@ -217,6 +218,21 @@ export const useMessengerStore = defineStore('messenger', () => {
 
 		if (conversationIndex !== -1) {
 			conversationsRef.value[conversationIndex].theme = theme
+		}
+	}
+
+	function upsertConversationNickname(
+		conversation_id: string,
+		participant: string,
+		nickname: string
+	) {
+		const conversationIndex = conversationsRef.value.findIndex(
+			(_conversation) => _conversation.id === conversation_id.toString()
+		)
+
+		if (conversationIndex !== -1) {
+			conversationsRef.value[conversationIndex].nicknames[participant] =
+				nickname
 		}
 	}
 })

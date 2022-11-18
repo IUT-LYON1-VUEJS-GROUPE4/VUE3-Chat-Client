@@ -1,19 +1,19 @@
 import { useRouter } from 'vue-router'
 import type {
-	CreateManyToManyConversationEmit,
-	GetConversationsEmit,
-	GetOrCreateOneToOneConversationEmit,
-	GetUsersEmit,
-	PostMessageEmit,
-	AddParticipantEmit,
-	RemoveParticipantEmit,
-	ReactMessageEmit,
-	ReplyMessageEmit,
-	DeleteMessageEmit,
-	EditMessageEmit,
-	SeeConversationEmit,
-	TypeConversationEmit,
-	SetConversationThemeEmit,
+    CreateManyToManyConversationEmit,
+    GetConversationsEmit,
+    GetOrCreateOneToOneConversationEmit,
+    GetUsersEmit,
+    PostMessageEmit,
+    AddParticipantEmit,
+    RemoveParticipantEmit,
+    ReactMessageEmit,
+    ReplyMessageEmit,
+    DeleteMessageEmit,
+    EditMessageEmit,
+    SeeConversationEmit,
+    TypeConversationEmit,
+    SetConversationThemeEmit, SetParticipantNicknameEmit,
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useMessengerStore } from '@/stores/messenger'
@@ -190,6 +190,22 @@ export function useHighLevelClientEmits() {
 				{
 					conversation_id: conversationId,
 					theme: theme,
+				}
+			)
+			return response
+		},
+
+		async setParticipantNicknameEmit(
+			conversationId: string,
+			participant: string,
+			nickname: string
+		) {
+			const response = await chatClient.emit<SetParticipantNicknameEmit>(
+				'@setParticipantNickname',
+				{
+					conversation_id: conversationId,
+					participant: participant,
+					nickname: nickname,
 				}
 			)
 			return response
