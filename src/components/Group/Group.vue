@@ -6,9 +6,12 @@ import { useMessengerStore } from '@/stores/messenger'
 const clientEmits = useHighLevelClientEmits()
 const messengerStore = useMessengerStore()
 
-const { users, currentConversation } = toRefs(messengerStore)
+const { users, currentConversation, getNickname } = toRefs(messengerStore)
 
 const search = ref('')
+const inputNewNickname = ref('')
+
+const participantChangeNickname = ref('')
 
 const isSearchInput = (username: string, searchInput: string): boolean => {
 	if (search.value.length <= 0) return true
@@ -45,6 +48,17 @@ async function removeParticipant(username: string): Promise<void> {
 	const id = conv.id
 	clientEmits.removeParticipant(username, id)
 }
+
+function updateNickname(): void {
+	const id = currentConversation.value?.id
+	if (!id) return
+
+	clientEmits.setParticipantNicknameEmit(
+		id,
+		participantChangeNickname.value,
+		inputNewNickname.value
+	)
+}
 </script>
 
 <template>
@@ -69,9 +83,14 @@ async function removeParticipant(username: string): Promise<void> {
 			<span>
 				{{ member.username }}
 				<br />
-				<i class="nickname"></i>
+				<i class="nickname">{{ getNickname(member.username) }}</i>
 			</span>
-			<i title="Modifier le surnom" class="circular quote left link icon"></i>
+			<i
+				title="Modifier le surnom"
+				class="circular quote left link icon"
+				data-bs-toggle="modal"
+				data-bs-target="#changeNicknameModal"
+				@click="participantChangeNickname = member.username"></i>
 			<i
 				@click="removeParticipant(member.username)"
 				title="Enlever de la conversation"
@@ -90,6 +109,50 @@ async function removeParticipant(username: string): Promise<void> {
 				@click="addParticipant(member.username)"
 				title="Ajouter à la conversation"
 				class="circular plus icon link"></i>
+		</div>
+	</div>
+
+	<div
+		class="modal fade"
+		id="changeNicknameModal"
+		tabindex="-1"
+		aria-labelledby="exampleModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="exampleModalLabel">
+						Modifier le nom de la conversation
+					</h1>
+					<button
+						type="button"
+						class="btn-close"
+						data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<input
+						v-on:keyup.enter="updateNickname()"
+						v-model="inputNewNickname"
+						class="form-control"
+						type="text"
+						placeholder="Nouveau titre" />
+				</div>
+				<div class="modal-footer">
+					<button
+						type="button"
+						class="btn btn-secondary"
+						data-bs-dismiss="modal">
+						Close
+					</button>
+					<button
+						type="button"
+						class="btn btn-primary"
+						@click="updateNickname()">
+						Save changes
+					</button>
+				</div>
+			</div>
 		</div>
 	</div>
 </template>

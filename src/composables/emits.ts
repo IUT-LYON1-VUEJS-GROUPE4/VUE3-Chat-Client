@@ -13,8 +13,9 @@ import type {
 	EditMessageEmit,
 	SeeConversationEmit,
 	TypeConversationEmit,
-	SetConversationTitleEmit,
 	SetConversationThemeEmit,
+	SetConversationTitleEmit,
+	SetParticipantNicknameEmit,
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useMessengerStore } from '@/stores/messenger'
@@ -202,6 +203,22 @@ export function useHighLevelClientEmits() {
 				{
 					conversation_id: conversationId,
 					theme: theme,
+				}
+			)
+			return response
+		},
+
+		async setParticipantNicknameEmit(
+			conversationId: string,
+			participant: string,
+			nickname: string
+		) {
+			const response = await chatClient.emit<SetParticipantNicknameEmit>(
+				'@setParticipantNickname',
+				{
+					conversation_id: conversationId,
+					participant: participant,
+					nickname: nickname,
 				}
 			)
 			return response
