@@ -283,7 +283,9 @@ setInterval(() => (timeRef.value = new Date()), 1000)
 const usersWriting = computed(() => {
 	return Object.entries(currentConversation.value?.typing || {})
 		.filter(([username]) => username !== authenticatedUsername.value)
-		.filter(function ([dateString]) {
+		.filter(function (value) {
+			const dateString = value[1]
+			console.log(dateString)
 			const now = timeRef.value.getTime()
 			const delayInSeconds = now - 10 * 1000
 
