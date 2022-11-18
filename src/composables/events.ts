@@ -52,7 +52,7 @@ export function listenHighLevelClientEvents() {
 	chatClient.on<MessagePostedEvent>(
 		'@messagePosted',
 		async ({ conversation_id, message }) => {
-			messengerStore.upsertMessageConversation(conversation_id, message)
+			messengerStore.upsertMessageConversation(conversation_id, message, 'send')
 		}
 	)
 
@@ -73,14 +73,18 @@ export function listenHighLevelClientEvents() {
 	chatClient.on<MessageReactedEvent>(
 		'@messageReacted',
 		async ({ conversation_id, message }) => {
-			messengerStore.upsertMessageConversation(conversation_id, message)
+			messengerStore.upsertMessageConversation(
+				conversation_id,
+				message,
+				'react'
+			)
 		}
 	)
 
 	chatClient.on<MessageEditedEvent>(
 		'@messageEdited',
 		async ({ conversation_id, message }) => {
-			messengerStore.upsertMessageConversation(conversation_id, message)
+			messengerStore.upsertMessageConversation(conversation_id, message, 'edit')
 		}
 	)
 
@@ -118,7 +122,7 @@ export function listenHighLevelClientEvents() {
 	chatClient.on<ConversationTitleSetEvent>(
 		'@conversationTitleSet',
 		async ({ conversation_id, title }) => {
-			//TODO
+			messengerStore.upsertConversationTitle(conversation_id, title)
 		}
 	)
 
