@@ -451,6 +451,7 @@ updateSeenMessage()
 								:message="message"
 								:url-icon="getProfilePicture(message.from)"
 								:class="getClass(message, messages)"
+								:nickname="getNickname(message.from)"
 								@react="reactMessage($event)"
 								@reply-to-message="
 									replyToMessage(message.from, message.content, message.id)

@@ -8,6 +8,7 @@ const ps = defineProps<{
 	message: Message
 	urlIcon: string
 	class: string
+	nickname?: string
 }>()
 
 const emit = defineEmits([
@@ -51,6 +52,11 @@ const reactMessage = (react: string): void => {
 	emit('react', { message: props.value.message, react: react })
 }
 
+const titleNickName = computed(() => {
+	if (props.value.nickname) return `(${props.value.nickname})`
+	return ''
+})
+
 const replyToMessage = () => emit('reply-to-message')
 const deleteMessage = () => emit('delete-message')
 const editMessage = () => emit('edit-message')
@@ -92,7 +98,7 @@ const editMessage = () => emit('edit-message')
 			v-if="
 				props.class.includes('bottom') || props.class.includes('top bottom')
 			"
-			:title="props.message.from"
+			:title="`${props.message.from} ${titleNickName}`"
 			:src="props.urlIcon"
 			:alt="props.message.from" />
 		<div class="bubble" :class="props.class">
