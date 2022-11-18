@@ -28,7 +28,7 @@ const {
 	currentConversation,
 	authenticatedUsername,
 	currentConversationParticipants,
-	getNickname
+	getNickname,
 } = toRefs(messengerStore)
 
 const router = useRouter()
@@ -298,7 +298,7 @@ const usersWriting = computed(() => {
 })
 
 function updateTitle(): void {
-	if (inputNewTitle.value === '' || !currentConversation.value) return
+	if (!currentConversation.value) return
 
 	clientEmits.SetConversationTitleEmit(
 		currentConversation.value.id,
@@ -355,8 +355,12 @@ function isMuteConversation(): boolean {
 }
 
 function getViewerNickname(nickname: string): string {
-	if(nickname !== "") return " (" + nickname + ")"
-	else return ""
+	if (nickname !== '') return ' (' + nickname + ')'
+	else return ''
+}
+
+function resetConvTitleValue(): void {
+	inputNewTitle.value = ''
 }
 
 updateSeenMessage()
@@ -387,7 +391,9 @@ updateSeenMessage()
 					<span v-if="currentConversation">
 						{{ titleConversation(currentConversation) }}
 						<br />
-						<i class="nickname">{{ getNickname(titleConversation(currentConversation)) }}</i>
+						<i class="nickname">
+							{{ getNickname(titleConversation(currentConversation)) }}
+						</i>
 					</span>
 				</div>
 
@@ -407,7 +413,8 @@ updateSeenMessage()
 							v-if="currentConversation?.participants.length > 2"
 							class="item"
 							data-bs-toggle="modal"
-							data-bs-target="#changeTitleModal">
+							data-bs-target="#changeTitleModal"
+							@click="resetConvTitleValue()">
 							<i class="ui icon edit"></i>
 							Modifier le titre
 						</div>
@@ -464,9 +471,9 @@ updateSeenMessage()
 									v-for="view of messageSeen(message.id)"
 									:key="view.id"
 									:src="getProfilePicture(view.user)"
-									:title="`Vu par ${view.user}${getViewerNickname(getNickname(view.user))} à ${convertStringToDate(
-										view.time
-									).toLocaleTimeString()}`"
+									:title="`Vu par ${view.user}${getViewerNickname(
+										getNickname(view.user)
+									)} à ${convertStringToDate(view.time).toLocaleTimeString()}`"
 									alt="view" />
 							</div>
 						</div>
@@ -539,6 +546,10 @@ updateSeenMessage()
 						class="form-control"
 						type="text"
 						placeholder="Nouveau titre" />
+					<small class="sub-text">
+						Laisser le champs vide pour réinitialiser le titre de la
+						conversation
+					</small>
 				</div>
 				<div class="modal-footer">
 					<button

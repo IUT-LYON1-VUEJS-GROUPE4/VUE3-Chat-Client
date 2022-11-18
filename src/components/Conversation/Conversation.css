@@ -185,3 +185,9 @@
 .nickname {
 	font-weight: normal!important;
 }
+
+.sub-text {
+	font-style: italic;
+    padding-block: 5px;
+    padding-inline-start: 10px;
+}
