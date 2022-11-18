@@ -28,6 +28,7 @@ const {
 	currentConversation,
 	authenticatedUsername,
 	currentConversationParticipants,
+	getNickname
 } = toRefs(messengerStore)
 
 const router = useRouter()
@@ -353,6 +354,11 @@ function isMuteConversation(): boolean {
 	return false
 }
 
+function getViewerNickname(nickname: string): string {
+	if(nickname !== "") return " (" + nickname + ")"
+	else return ""
+}
+
 updateSeenMessage()
 </script>
 
@@ -380,46 +386,48 @@ updateSeenMessage()
 						:class="{ 'icon circle': participantsAreOnline }"></i>
 					<span v-if="currentConversation">
 						{{ titleConversation(currentConversation) }}
+						<br />
+						<i class="nickname">{{ getNickname(titleConversation(currentConversation)) }}</i>
 					</span>
+				</div>
 
-					<div class="ui simple dropdown item">
-						<i class="vertical ellipsis icon"></i>
+				<div class="ui simple dropdown item">
+					<i class="vertical ellipsis icon"></i>
 
-						<div class="menu">
-							<div
-								v-if="true"
-								class="item"
-								data-bs-toggle="modal"
-								data-bs-target="#changeThemeModal">
-								<i class="ui icon paint brush"></i>
-								Modifier le thème
-							</div>
-							<div
-								v-if="currentConversation?.participants.length > 2"
-								class="item"
-								data-bs-toggle="modal"
-								data-bs-target="#changeTitleModal">
-								<i class="ui icon edit"></i>
-								Modifier le titre
-							</div>
-							<div
-								v-if="!isMuteConversation()"
-								class="item"
-								@click="muteConversation()">
-								<i class="ui icon volume bell slash"></i>
-								Mettre en sourdine
-							</div>
-							<div
-								v-if="isMuteConversation()"
-								class="item"
-								@click="unmuteConversation()">
-								<i class="ui icon volume bell"></i>
-								Rétablir les notifications
-							</div>
-							<div class="item" @click="groupPanel = !groupPanel">
-								<i class="ui icon users"></i>
-								Gérer les participants
-							</div>
+					<div class="menu">
+						<div
+							v-if="true"
+							class="item"
+							data-bs-toggle="modal"
+							data-bs-target="#changeThemeModal">
+							<i class="ui icon paint brush"></i>
+							Modifier le thème
+						</div>
+						<div
+							v-if="currentConversation?.participants.length > 2"
+							class="item"
+							data-bs-toggle="modal"
+							data-bs-target="#changeTitleModal">
+							<i class="ui icon edit"></i>
+							Modifier le titre
+						</div>
+						<div
+							v-if="!isMuteConversation()"
+							class="item"
+							@click="muteConversation()">
+							<i class="ui icon volume bell slash"></i>
+							Mettre en sourdine
+						</div>
+						<div
+							v-if="isMuteConversation()"
+							class="item"
+							@click="unmuteConversation()">
+							<i class="ui icon volume bell"></i>
+							Rétablir les notifications
+						</div>
+						<div class="item" @click="groupPanel = !groupPanel">
+							<i class="ui icon users"></i>
+							Gérer les participants
 						</div>
 					</div>
 				</div>
@@ -456,7 +464,7 @@ updateSeenMessage()
 									v-for="view of messageSeen(message.id)"
 									:key="view.id"
 									:src="getProfilePicture(view.user)"
-									:title="`Vu par ${view.user} à ${convertStringToDate(
+									:title="`Vu par ${view.user}${getViewerNickname(getNickname(view.user))} à ${convertStringToDate(
 										view.time
 									).toLocaleTimeString()}`"
 									alt="view" />
