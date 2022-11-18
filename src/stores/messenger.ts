@@ -88,6 +88,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 		setConversations,
 		setCurrentConversationId,
 		setUsers,
+		getNickname,
 		upsertUser,
 		upsertConversation,
 		upsertMessageConversation,
@@ -111,6 +112,38 @@ export const useMessengerStore = defineStore('messenger', () => {
 
 	function setConversations(conversations: Conversation[]) {
 		conversationsRef.value = conversations
+	}
+
+	function getNickname(username: string): string {
+
+		if(username.includes(","))
+		{
+			const tab = username.substring(8).split(", ")
+			const emptyString = "[aucun]"
+
+			let stringReturn = "";
+			tab.forEach(element => {
+				const nickname = getNickname(element)
+				if(nickname !== "") stringReturn += nickname + ", "
+				else stringReturn += emptyString + ", "
+			});
+
+			let test = "";
+			for(let i = 0; i < tab.length; i++)
+			{
+				test += emptyString + ", "
+			}
+
+			if(stringReturn !== test) return "Groupe: " + stringReturn.substring(0, stringReturn.length-2)
+			else return ""
+		}
+		else
+		{
+			return Object.entries(currentConversation.value?.nicknames || {})
+			.filter(([usernameKey]) => usernameKey === username)
+			.map((array) => array[1])
+			.toString()
+		}	
 	}
 
 	function upsertUser(user: User) {

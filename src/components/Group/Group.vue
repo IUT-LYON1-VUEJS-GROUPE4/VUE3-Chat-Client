@@ -6,7 +6,7 @@ import { useMessengerStore } from '@/stores/messenger'
 const clientEmits = useHighLevelClientEmits()
 const messengerStore = useMessengerStore()
 
-const { users, currentConversation } = toRefs(messengerStore)
+const { users, currentConversation, getNickname } = toRefs(messengerStore)
 
 const search = ref('')
 const inputNewNickname = ref('')
@@ -83,7 +83,7 @@ function updateNickname(): void {
 			<span>
 				{{ member.username }}
 				<br />
-				<i class="nickname"></i>
+				<i class="nickname">{{ getNickname(member.username) }}</i>
 			</span>
 			<i
 				title="Modifier le surnom"
