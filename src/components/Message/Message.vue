@@ -65,8 +65,17 @@ const editMessage = () => emit('edit-message')
 <template>
 	<div v-if="user?.username === props.message.from" class="message mine">
 		<div class="bubble" :class="props.class">
-			<p v-if="props.message.reply_to" class="reply_content">
-				{{ props.message.reply_to.content }}
+			<p
+				v-if="props.message.reply_to"
+				class="reply_content"
+				:class="{
+					'message-deleted': props.message.reply_to.deleted,
+				}">
+				{{
+					props.message.reply_to.deleted
+						? 'Message supprimé'
+						: props.message.reply_to.content
+				}}
 			</p>
 			<p :class="{ 'message-deleted': props.message.deleted }">
 				{{ props.message.deleted ? 'Message supprimé' : props.message.content }}
