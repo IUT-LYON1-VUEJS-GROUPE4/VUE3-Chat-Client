@@ -59,6 +59,10 @@ function updateNickname(): void {
 		inputNewNickname.value
 	)
 }
+
+function resetNicknameValue(): void {
+	inputNewNickname.value = ''
+}
 </script>
 
 <template>
@@ -90,7 +94,9 @@ function updateNickname(): void {
 				class="circular quote left link icon"
 				data-bs-toggle="modal"
 				data-bs-target="#changeNicknameModal"
-				@click="participantChangeNickname = member.username"></i>
+				@click="
+					;[(participantChangeNickname = member.username), resetNicknameValue()]
+				"></i>
 			<i
 				@click="removeParticipant(member.username)"
 				title="Enlever de la conversation"
