@@ -8,6 +8,7 @@ const ps = defineProps<{
 	message: Message
 	urlIcon: string
 	class: string
+	nickname?: string
 }>()
 
 const emit = defineEmits([
@@ -18,6 +19,7 @@ const emit = defineEmits([
 ])
 
 const props = ref(ps)
+console.log(props.value.class)
 
 const authStore = useAuthStore()
 const { user } = toRefs(authStore)
@@ -49,6 +51,11 @@ const reactMessage = (react: string): void => {
 
 	emit('react', { message: props.value.message, react: react })
 }
+
+const titleNickName = computed(() => {
+	if (props.value.nickname) return `(${props.value.nickname})`
+	return ''
+})
 
 const replyToMessage = () => emit('reply-to-message')
 const deleteMessage = () => emit('delete-message')
@@ -88,8 +95,10 @@ const editMessage = () => emit('edit-message')
 	</div>
 	<div v-else class="message">
 		<img
-			v-if="props.class === 'bottom' || props.class === 'top bottom'"
-			:title="props.message.from"
+			v-if="
+				props.class.includes('bottom') || props.class.includes('top bottom')
+			"
+			:title="`${props.message.from} ${titleNickName}`"
 			:src="props.urlIcon"
 			:alt="props.message.from" />
 		<div class="bubble" :class="props.class">
