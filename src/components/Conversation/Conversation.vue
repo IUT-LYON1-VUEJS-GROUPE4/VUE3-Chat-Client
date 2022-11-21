@@ -28,6 +28,7 @@ const {
 	currentConversation,
 	authenticatedUsername,
 	currentConversationParticipants,
+	getNickname,
 } = toRefs(messengerStore)
 
 const router = useRouter()
@@ -282,7 +283,9 @@ setInterval(() => (timeRef.value = new Date()), 1000)
 const usersWriting = computed(() => {
 	return Object.entries(currentConversation.value?.typing || {})
 		.filter(([username]) => username !== authenticatedUsername.value)
-		.filter(function ([dateString]) {
+		.filter(function (value) {
+			const dateString = value[1]
+			console.log(dateString)
 			const now = timeRef.value.getTime()
 			const delayInSeconds = now - 10 * 1000
 
@@ -297,7 +300,7 @@ const usersWriting = computed(() => {
 })
 
 function updateTitle(): void {
-	if (inputNewTitle.value === '' || !currentConversation.value) return
+	if (!currentConversation.value) return
 
 	clientEmits.SetConversationTitleEmit(
 		currentConversation.value.id,
@@ -353,6 +356,15 @@ function isMuteConversation(): boolean {
 	return false
 }
 
+function getViewerNickname(nickname: string): string {
+	if (nickname !== '') return ' (' + nickname + ')'
+	else return ''
+}
+
+function resetConvTitleValue(): void {
+	inputNewTitle.value = ''
+}
+
 updateSeenMessage()
 </script>
 
@@ -380,46 +392,51 @@ updateSeenMessage()
 						:class="{ 'icon circle': participantsAreOnline }"></i>
 					<span v-if="currentConversation">
 						{{ titleConversation(currentConversation) }}
+						<br />
+						<i class="nickname">
+							{{ getNickname(titleConversation(currentConversation)) }}
+						</i>
 					</span>
+				</div>
 
-					<div class="ui simple dropdown item">
-						<i class="vertical ellipsis icon"></i>
+				<div class="ui simple dropdown item">
+					<i class="vertical ellipsis icon"></i>
 
-						<div class="menu">
-							<div
-								v-if="true"
-								class="item"
-								data-bs-toggle="modal"
-								data-bs-target="#changeThemeModal">
-								<i class="ui icon paint brush"></i>
-								Modifier le thème
-							</div>
-							<div
-								v-if="currentConversation?.participants.length > 2"
-								class="item"
-								data-bs-toggle="modal"
-								data-bs-target="#changeTitleModal">
-								<i class="ui icon edit"></i>
-								Modifier le titre
-							</div>
-							<div
-								v-if="!isMuteConversation()"
-								class="item"
-								@click="muteConversation()">
-								<i class="ui icon volume bell slash"></i>
-								Mettre en sourdine
-							</div>
-							<div
-								v-if="isMuteConversation()"
-								class="item"
-								@click="unmuteConversation()">
-								<i class="ui icon volume bell"></i>
-								Rétablir les notifications
-							</div>
-							<div class="item" @click="groupPanel = !groupPanel">
-								<i class="ui icon users"></i>
-								Gérer les participants
-							</div>
+					<div class="menu">
+						<div
+							v-if="true"
+							class="item"
+							data-bs-toggle="modal"
+							data-bs-target="#changeThemeModal">
+							<i class="ui icon paint brush"></i>
+							Modifier le thème
+						</div>
+						<div
+							v-if="currentConversation?.participants.length > 2"
+							class="item"
+							data-bs-toggle="modal"
+							data-bs-target="#changeTitleModal"
+							@click="resetConvTitleValue()">
+							<i class="ui icon edit"></i>
+							Modifier le titre
+						</div>
+						<div
+							v-if="!isMuteConversation()"
+							class="item"
+							@click="muteConversation()">
+							<i class="ui icon volume bell slash"></i>
+							Mettre en sourdine
+						</div>
+						<div
+							v-if="isMuteConversation()"
+							class="item"
+							@click="unmuteConversation()">
+							<i class="ui icon volume bell"></i>
+							Rétablir les notifications
+						</div>
+						<div class="item" @click="groupPanel = !groupPanel">
+							<i class="ui icon users"></i>
+							Gérer les participants
 						</div>
 					</div>
 				</div>
@@ -443,6 +460,7 @@ updateSeenMessage()
 								:message="message"
 								:url-icon="getProfilePicture(message.from)"
 								:class="getClass(message, messages)"
+								:nickname="getNickname(message.from)"
 								@react="reactMessage($event)"
 								@reply-to-message="
 									replyToMessage(message.from, message.content, message.id)
@@ -456,9 +474,9 @@ updateSeenMessage()
 									v-for="view of messageSeen(message.id)"
 									:key="view.id"
 									:src="getProfilePicture(view.user)"
-									:title="`Vu par ${view.user} à ${convertStringToDate(
-										view.time
-									).toLocaleTimeString()}`"
+									:title="`Vu par ${view.user}${getViewerNickname(
+										getNickname(view.user)
+									)} à ${convertStringToDate(view.time).toLocaleTimeString()}`"
 									alt="view" />
 							</div>
 						</div>
@@ -531,6 +549,10 @@ updateSeenMessage()
 						class="form-control"
 						type="text"
 						placeholder="Nouveau titre" />
+					<small class="sub-text">
+						Laisser le champs vide pour réinitialiser le titre de la
+						conversation
+					</small>
 				</div>
 				<div class="modal-footer">
 					<button

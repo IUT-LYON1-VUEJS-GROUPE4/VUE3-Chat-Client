@@ -129,7 +129,11 @@ export function listenHighLevelClientEvents() {
 	chatClient.on<ParticipantNicknameSetEvent>(
 		'@participantNicknameSet',
 		async ({ conversation_id, participant, nickname }) => {
-			//TODO
+			messengerStore.upsertConversationNickname(
+				conversation_id,
+				participant,
+				nickname
+			)
 		}
 	)
 }
