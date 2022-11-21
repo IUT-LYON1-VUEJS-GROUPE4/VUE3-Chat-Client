@@ -115,35 +115,31 @@ export const useMessengerStore = defineStore('messenger', () => {
 	}
 
 	function getNickname(username: string): string {
+		if (username.includes(',')) {
+			const tab = username.substring(8).split(', ')
+			const emptyString = '[aucun]'
 
-		if(username.includes(","))
-		{
-			const tab = username.substring(8).split(", ")
-			const emptyString = "[aucun]"
-
-			let stringReturn = "";
-			tab.forEach(element => {
+			let stringReturn = ''
+			tab.forEach((element) => {
 				const nickname = getNickname(element)
-				if(nickname !== "") stringReturn += nickname + ", "
-				else stringReturn += emptyString + ", "
-			});
+				if (nickname !== '') stringReturn += nickname + ', '
+				else stringReturn += emptyString + ', '
+			})
 
-			let test = "";
-			for(let i = 0; i < tab.length; i++)
-			{
-				test += emptyString + ", "
+			let test = ''
+			for (let i = 0; i < tab.length; i++) {
+				test += emptyString + ', '
 			}
 
-			if(stringReturn !== test) return "Groupe: " + stringReturn.substring(0, stringReturn.length-2)
-			else return ""
-		}
-		else
-		{
+			if (stringReturn !== test)
+				return 'Groupe: ' + stringReturn.substring(0, stringReturn.length - 2)
+			else return ''
+		} else {
 			return Object.entries(currentConversation.value?.nicknames || {})
-			.filter(([usernameKey]) => usernameKey === username)
-			.map((array) => array[1])
-			.toString()
-		}	
+				.filter(([usernameKey]) => usernameKey === username)
+				.map((array) => array[1])
+				.toString()
+		}
 	}
 
 	function upsertUser(user: User) {
