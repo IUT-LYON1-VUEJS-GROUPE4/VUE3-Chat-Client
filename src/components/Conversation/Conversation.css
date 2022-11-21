@@ -26,8 +26,8 @@
 	margin: 0;
 }
 
-.title{
-	display:flex;
+.title {
+	display: flex;
 	align-items: center;
 	justify-content: center;
 	flex-direction: row;
@@ -183,11 +183,11 @@
 }
 
 .nickname {
-	font-weight: normal!important;
+	font-weight: normal !important;
 }
 
 .sub-text {
 	font-style: italic;
-    padding-block: 5px;
-    padding-inline-start: 10px;
+	padding-block: 5px;
+	padding-inline-start: 10px;
 }
