@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { ref, toRefs, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useMessengerStore } from '@/stores/messenger'
+
+const router = useRouter()
 
 const clientEmits = useHighLevelClientEmits()
 const messengerStore = useMessengerStore()
 
-const { users, currentConversation, getNickname } = toRefs(messengerStore)
+const { users, currentConversation, getNickname, authenticatedUsername } =
+	toRefs(messengerStore)
 
 const search = ref('')
 const inputNewNickname = ref('')
@@ -47,6 +51,12 @@ async function removeParticipant(username: string): Promise<void> {
 
 	const id = conv.id
 	clientEmits.removeParticipant(username, id)
+
+	if (username === authenticatedUsername.value) {
+		router.push({
+			name: 'Community',
+		})
+	}
 }
 
 function updateNickname(): void {
@@ -92,6 +102,9 @@ function resetNicknameValue(): void {
 			<i
 				title="Modifier le surnom"
 				class="circular quote left link icon"
+				:class="{
+					'concombre-tordu': member.username === authenticatedUsername,
+				}"
 				data-bs-toggle="modal"
 				data-bs-target="#changeNicknameModal"
 				@click="
@@ -101,6 +114,9 @@ function resetNicknameValue(): void {
 				@click="removeParticipant(member.username)"
 				title="Enlever de la conversation"
 				class="circular times icon link"
+				:class="{
+					'concombre-tordu': member.username === authenticatedUsername,
+				}"
 				style=""></i>
 		</div>
 		<div class="spanner">

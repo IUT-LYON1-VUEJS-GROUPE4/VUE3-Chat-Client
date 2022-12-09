@@ -48,3 +48,7 @@ hr {
 	display: flex;
 	align-items: center;
 }
+
+.concombre-tordu {
+    color: red;
+}
