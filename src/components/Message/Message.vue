@@ -90,7 +90,7 @@ const editMessage = () => emit('edit-message')
 					class="outline icon"></i>
 			</span>
 		</div>
-		<div class="controls">
+		<div v-if="!message.deleted" class="controls">
 			<i
 				title="Supprimer"
 				class="circular trash icon"
@@ -112,7 +112,11 @@ const editMessage = () => emit('edit-message')
 			:alt="props.message.from" />
 		<div class="bubble" :class="props.class">
 			<p v-if="props.message.reply_to" class="reply_content">
-				{{ props.message.reply_to.content }}
+				{{
+					props.message.reply_to.deleted
+						? 'Message supprimé'
+						: props.message.reply_to.content
+				}}
 			</p>
 			<p :class="{ 'message-deleted': props.message.deleted }">
 				{{ props.message.deleted ? 'Message supprimé' : props.message.content }}
@@ -127,7 +131,7 @@ const editMessage = () => emit('edit-message')
 					class="outline icon"></i>
 			</span>
 		</div>
-		<div class="controls">
+		<div v-if="!message.deleted" class="controls">
 			<i
 				title="Répondre"
 				class="circular reply icon"

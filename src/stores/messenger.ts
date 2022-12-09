@@ -229,10 +229,9 @@ export const useMessengerStore = defineStore('messenger', () => {
 			].messages.findIndex((_message) => _message.id === messageId)
 
 			if (messageIndex !== -1) {
-				conversationsRef.value[conversationIndex].messages.splice(
-					messageIndex,
-					1
-				)
+				conversationsRef.value[conversationIndex].messages[
+					messageIndex
+				].deleted = true
 			}
 		}
 	}
