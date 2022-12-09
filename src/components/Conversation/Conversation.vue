@@ -285,7 +285,6 @@ const usersWriting = computed(() => {
 		.filter(([username]) => username !== authenticatedUsername.value)
 		.filter(function (value) {
 			const dateString = value[1]
-			console.log(dateString)
 			const now = timeRef.value.getTime()
 			const delayInSeconds = now - 10 * 1000
 
@@ -308,7 +307,11 @@ function updateTitle(): void {
 	)
 }
 
-function updateTheme(id: string, theme: 'BLUE' | 'RED' | 'RAINBOW'): void {
+function updateTheme(
+	id: string | undefined,
+	theme: 'BLUE' | 'RED' | 'RAINBOW'
+): void {
+	if (!id) return
 	clientEmits.setConversationTheme(id, theme)
 }
 
@@ -365,6 +368,25 @@ function resetConvTitleValue(): void {
 	inputNewTitle.value = ''
 }
 
+/**
+ * Returns true if the targeted message was sent after less than 10 minutes than the previous one.
+ */
+const isShortTime = (message: MessageType, messages: MessageType[]) => {
+	return computed((): boolean => {
+		const index = messages.findIndex((_message) => _message.id === message.id)
+		if (!messages[index - 1]) return true
+		if (messages[index - 1].from !== message.from) return true
+
+		if (
+			convertStringToDate(messages[index - 1].posted_at).getTime() + 600000 <
+			convertStringToDate(message.posted_at).getTime()
+		)
+			return true
+
+		return false
+	}).value
+}
+
 updateSeenMessage()
 </script>
 
@@ -412,7 +434,10 @@ updateSeenMessage()
 							Modifier le thème
 						</div>
 						<div
-							v-if="currentConversation?.participants.length > 2"
+							v-if="
+								currentConversation?.participants.length &&
+								currentConversation.participants.length > 2
+							"
 							class="item"
 							data-bs-toggle="modal"
 							data-bs-target="#changeTitleModal"
@@ -451,7 +476,7 @@ updateSeenMessage()
 							class="message-container"
 							v-for="message in messages"
 							:key="message.id">
-							<div class="time">
+							<div v-if="isShortTime(message, messages)" class="time">
 								{{
 									convertStringToDate(message.posted_at).toLocaleTimeString()
 								}}
@@ -589,19 +614,19 @@ updateSeenMessage()
 				</div>
 				<div class="modal-body d-flex justify-content-around">
 					<div
-						@click="updateTheme(currentConversation.id, 'BLUE')"
+						@click="updateTheme(currentConversation?.id, 'BLUE')"
 						class="circle-theme blue"
 						:class="{
 							'theme-selected': themeSelected('BLUE'),
 						}"></div>
 					<div
-						@click="updateTheme(currentConversation.id, 'RED')"
+						@click="updateTheme(currentConversation?.id, 'RED')"
 						class="circle-theme red"
 						:class="{
 							'theme-selected': themeSelected('RED'),
 						}"></div>
 					<div
-						@click="updateTheme(currentConversation.id, 'RAINBOW')"
+						@click="updateTheme(currentConversation?.id, 'RAINBOW')"
 						class="circle-theme rainbow"
 						:class="{
 							'theme-selected': themeSelected('RAINBOW'),

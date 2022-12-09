@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, toRefs } from 'vue'
 import type { Conversation, Message, User } from '@/client/types/business'
 import { useAuthStore } from '@/stores/auth'
+import { DEFAULT_NOTIFY_SOUND } from '../constants'
 
 export const useMessengerStore = defineStore('messenger', () => {
 	const authStore = useAuthStore()
@@ -66,8 +67,8 @@ export const useMessengerStore = defineStore('messenger', () => {
 		if (currentConversation.value.participants.length > 2) {
 			const allMember = currentConversationParticipants.value
 
-			for (let i = 0; i < allMember.length; i++) {
-				if (availableUsernames.value.includes(allMember[i])) return true
+			for (const member in allMember) {
+				if (availableUsernames.value.includes(member)) return true
 			}
 
 			return false
@@ -126,14 +127,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 				else stringReturn += emptyString + ', '
 			})
 
-			let test = ''
-			for (let i = 0; i < tab.length; i++) {
-				test += emptyString + ', '
-			}
-
-			if (stringReturn !== test)
-				return 'Groupe: ' + stringReturn.substring(0, stringReturn.length - 2)
-			else return ''
+			return 'Groupe: ' + stringReturn.substring(0, stringReturn.length - 2)
 		} else {
 			return Object.entries(currentConversation.value?.nicknames || {})
 				.filter(([usernameKey]) => usernameKey === username)
@@ -192,9 +186,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 			}
 
 			if (!conversationsMute.includes(conversationId)) {
-				const audio = new Audio(
-					'https://us-tuna-sounds-files.voicemod.net/e9229244-01da-412e-a7f0-3df937d5010f-1655989344407.mp3'
-				)
+				const audio = new Audio(DEFAULT_NOTIFY_SOUND)
 				audio.play()
 			}
 		}

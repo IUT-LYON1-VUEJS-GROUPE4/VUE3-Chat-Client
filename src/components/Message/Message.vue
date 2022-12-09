@@ -19,7 +19,6 @@ const emit = defineEmits([
 ])
 
 const props = ref(ps)
-console.log(props.value.class)
 
 const authStore = useAuthStore()
 const { user } = toRefs(authStore)

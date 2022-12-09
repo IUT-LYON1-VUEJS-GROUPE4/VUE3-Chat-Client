@@ -2,6 +2,7 @@
 import { toRefs, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Conversation } from '@/client/types/business'
+import { DEFAULT_PROFILE_PICTURE } from '@/constants'
 import { useAuthStore } from '@/stores/auth'
 import { useMessengerStore } from '@/stores/messenger'
 
@@ -41,13 +42,11 @@ const filteredConversations = computed(() => {
 
 	const conversationsResult: Conversation[] = []
 
-	conversations.value.map((conversation: Conversation) => {
+	conversations.value.forEach((conversation: Conversation) => {
 		let alreadyFounded = false
-		for (let i = 0; i < conversation.participants.length; i++) {
+		for (const participants in conversation.participants) {
 			if (
-				conversation.participants[i]
-					.toLowerCase()
-					.includes(searchInput.value.toLowerCase())
+				participants.toLowerCase().includes(searchInput.value.toLowerCase())
 			) {
 				conversationsResult.push(conversation)
 				alreadyFounded = true
@@ -77,7 +76,7 @@ function getProfilePicture(participants: string[]): string {
 	)
 	const user = users.value.find((user) => user.username === username)
 	if (!user) {
-		return 'https://yt3.ggpht.com/JliOszS4fXEpCIs2it_vsBjwhlNWgZsboezGA7NYUtihf8F54A5I7laaj2d3zpH-io6e2fVL=s900-c-k-c0x00ffffff-no-rj' // Mmmmmh
+		return DEFAULT_PROFILE_PICTURE
 	}
 
 	return user.picture_url
