@@ -307,7 +307,11 @@ function updateTitle(): void {
 	)
 }
 
-function updateTheme(id: string, theme: 'BLUE' | 'RED' | 'RAINBOW'): void {
+function updateTheme(
+	id: string | undefined,
+	theme: 'BLUE' | 'RED' | 'RAINBOW'
+): void {
+	if (!id) return
 	clientEmits.setConversationTheme(id, theme)
 }
 
@@ -430,7 +434,10 @@ updateSeenMessage()
 							Modifier le thème
 						</div>
 						<div
-							v-if="currentConversation?.participants.length > 2"
+							v-if="
+								currentConversation?.participants.length &&
+								currentConversation.participants.length > 2
+							"
 							class="item"
 							data-bs-toggle="modal"
 							data-bs-target="#changeTitleModal"
@@ -607,19 +614,19 @@ updateSeenMessage()
 				</div>
 				<div class="modal-body d-flex justify-content-around">
 					<div
-						@click="updateTheme(currentConversation.id, 'BLUE')"
+						@click="updateTheme(currentConversation?.id, 'BLUE')"
 						class="circle-theme blue"
 						:class="{
 							'theme-selected': themeSelected('BLUE'),
 						}"></div>
 					<div
-						@click="updateTheme(currentConversation.id, 'RED')"
+						@click="updateTheme(currentConversation?.id, 'RED')"
 						class="circle-theme red"
 						:class="{
 							'theme-selected': themeSelected('RED'),
 						}"></div>
 					<div
-						@click="updateTheme(currentConversation.id, 'RAINBOW')"
+						@click="updateTheme(currentConversation?.id, 'RAINBOW')"
 						class="circle-theme rainbow"
 						:class="{
 							'theme-selected': themeSelected('RAINBOW'),
