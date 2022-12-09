@@ -66,10 +66,6 @@ const filteredConversations = computed(() => {
 	return sortConversations(conversationsResult)
 })
 
-function convertStringToDate(date: string): Date {
-	return new Date(date)
-}
-
 function getProfilePicture(participants: string[]): string {
 	const username = participants.find(
 		(participant) => participant !== authenticatedUsername.value
@@ -205,9 +201,8 @@ function isOnlineConversation(participants: string[]): boolean {
 						v-if="conversation.participants.length < 3"
 						:src="getProfilePicture(conversation.participants)"
 						:alt="`Photo de Conversation #${conversation.id}`" />
-					<span v-else data-v-73baddaf="">
+					<span v-else>
 						<i
-							data-v-73baddaf=""
 							class="users icon"
 							:class="{ new: conversation.messages.length === 0 }"></i>
 					</span>
@@ -223,12 +218,11 @@ function isOnlineConversation(participants: string[]): boolean {
 						<span class="time">
 							{{
 								conversation.messages.length === 0
-									? convertStringToDate(
-											conversation.updated_at
-									  ).toLocaleDateString()
-									: convertStringToDate(
-											conversation.messages[conversation.messages.length - 1]
-												.posted_at
+									? new Date(conversation.updated_at).toLocaleDateString()
+									: new Date(
+											conversation.messages[
+												conversation.messages.length - 1
+											].posted_at
 									  ).toLocaleDateString()
 							}}
 						</span>
@@ -250,12 +244,11 @@ function isOnlineConversation(participants: string[]): boolean {
 						<span class="time">
 							{{
 								conversation.messages.length === 0
-									? convertStringToDate(
-											conversation.updated_at
-									  ).toLocaleTimeString()
-									: convertStringToDate(
-											conversation.messages[conversation.messages.length - 1]
-												.posted_at
+									? new Date(conversation.updated_at).toLocaleTimeString()
+									: new Date(
+											conversation.messages[
+												conversation.messages.length - 1
+											].posted_at
 									  ).toLocaleTimeString()
 							}}
 						</span>

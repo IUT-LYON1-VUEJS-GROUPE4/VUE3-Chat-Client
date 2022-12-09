@@ -14,10 +14,6 @@ function filteredMessage(conv: Conversation) {
 		return mess.content?.toLowerCase().includes(searchInput.value.toLowerCase())
 	})
 }
-
-function convertStringToDate(date: string): Date {
-	return new Date(date)
-}
 </script>
 
 <template>
@@ -45,8 +41,8 @@ function convertStringToDate(date: string): Date {
 					<div v-if="conversation.type === 'many_to_many'">
 						<div class="author">
 							<div class="avatar">
-								<span data-v-73baddaf="">
-									<i data-v-73baddaf="" class="users icon"></i>
+								<span>
+									<i class="users icon"></i>
 								</span>
 							</div>
 
@@ -76,7 +72,7 @@ function convertStringToDate(date: string): Date {
 											: 'time'
 									">
 									{{
-										convertStringToDate(conversation.updated_at)
+										new Date(conversation.updated_at)
 											.toLocaleString()
 											.substring(0, 16)
 									}}
@@ -127,7 +123,7 @@ function convertStringToDate(date: string): Date {
 											: 'time'
 									">
 									{{
-										convertStringToDate(conversation.updated_at)
+										new Date(conversation.updated_at)
 											.toLocaleString()
 											.substring(0, 16)
 									}}

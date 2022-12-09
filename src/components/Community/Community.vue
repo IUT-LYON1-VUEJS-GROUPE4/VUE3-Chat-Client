@@ -15,6 +15,7 @@ const { availableUsernames, authenticatedUsername } = toRefs(messengerStore)
 const searchInput = ref('')
 
 const openingConversation = ref(false)
+const selectedUsers = ref<User[]>([])
 
 async function openConversation(users: User[]) {
 	if (users.length === 0) return
@@ -29,14 +30,8 @@ async function openConversation(users: User[]) {
 	}
 }
 
-const selectedUsers = ref<User[]>([])
-
 function userIsSelected(user: User): boolean {
 	return selectedUsers.value.includes(user)
-}
-
-function userIsOnLine(username: string): boolean {
-	return availableUsernames.value.includes(username)
 }
 
 function toggleUser(user: User): void {
@@ -78,7 +73,7 @@ const filteredUsers = computed(() =>
 				@click="toggleUser(user)"
 				:class="{ selected: userIsSelected(user) }">
 				<img :src="user.picture_url" :alt="`Photo de ${user.username}`" />
-				<span :class="{ available: userIsOnLine(user.username) }">
+				<span :class="{ available: user.isOnline }">
 					{{ user.username }}
 				</span>
 			</div>

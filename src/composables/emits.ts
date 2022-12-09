@@ -1,4 +1,5 @@
 import { useRouter } from 'vue-router'
+import type { Reaction, Theme } from '@/client/types/business'
 import type {
 	CreateManyToManyConversationEmit,
 	GetConversationsEmit,
@@ -121,7 +122,7 @@ export function useHighLevelClientEmits() {
 
 		async reactMessage(
 			messageID: string,
-			react: 'HEART' | 'THUMB' | 'HAPPY' | 'SAD',
+			react: Reaction,
 			conversationID: string
 		) {
 			const response = await chatClient.emit<ReactMessageEmit>(
@@ -194,10 +195,7 @@ export function useHighLevelClientEmits() {
 			return response
 		},
 
-		async setConversationTheme(
-			conversationId: string,
-			theme: 'BLUE' | 'RED' | 'RAINBOW'
-		) {
+		async setConversationTheme(conversationId: string, theme: Theme) {
 			const response = await chatClient.emit<SetConversationThemeEmit>(
 				'@setConversationTheme',
 				{

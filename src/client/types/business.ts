@@ -8,15 +8,17 @@ export type User = {
 	username: string
 	picture_url: string
 	awake: boolean
+	isOnline?: boolean
+	isMe?: boolean
 }
 
 export type Conversation = {
 	id: string
 	type: 'one_to_one' | 'many_to_many'
-	participants: string[]
+	participants: string[] | User[]
 	messages: Message[]
 	title: string | null
-	theme: 'BLUE' | 'RED' | 'RAINBOW'
+	theme: Theme
 	nicknames: Record<string, string>
 	updated_at: string
 	seen: Record<string, -1 | { message_id: string; time: string }>
@@ -33,5 +35,8 @@ export type Message = {
 	reply_to: Message | null
 	edited: boolean
 	deleted: boolean
-	reactions: Record<string, 'HEART' | 'THUMB' | 'HAPPY' | 'SAD'>
+	reactions: Record<string, Reaction>
 }
+
+export type Reaction = 'HEART' | 'THUMB' | 'HAPPY' | 'SAD'
+export type Theme = 'BLUE' | 'RED' | 'RAINBOW'

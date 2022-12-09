@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import type { Auth, Conversation, Message, User } from '@/client/types/business'
+import type {Auth, Conversation, Message, Reaction, User} from '@/client/types/business'
 
 export interface Emit {
 	event: string
@@ -77,7 +77,7 @@ export interface ReactMessageEmit extends Emit {
 	payload: {
 		conversation_id: string
 		message_id: string
-		reaction: 'HEART' | 'THUMB' | 'HAPPY' | 'SAD'
+		reaction: Reaction
 	}
 	response: {}
 }

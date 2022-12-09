@@ -1,8 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed, toRefs } from 'vue'
-import type { Conversation, Message, User } from '@/client/types/business'
+import type {
+	Conversation,
+	Message,
+	Theme,
+	User,
+} from '@/client/types/business'
+import { DEFAULT_NOTIFY_SOUND } from '@/constants'
 import { useAuthStore } from '@/stores/auth'
-import { DEFAULT_NOTIFY_SOUND } from '../constants'
 
 export const useMessengerStore = defineStore('messenger', () => {
 	const authStore = useAuthStore()
@@ -27,6 +32,8 @@ export const useMessengerStore = defineStore('messenger', () => {
 		usersRef.value.map((user) => {
 			return {
 				...user,
+				isOnline: availableUsernames.value.includes(user.username),
+				isMe: user.username === authenticatedUsername.value,
 			}
 		})
 	)
@@ -35,12 +42,15 @@ export const useMessengerStore = defineStore('messenger', () => {
 		conversationsRef.value.map((conversation) => {
 			return {
 				...conversation,
+				participants: conversation.participants.map((_participant) =>
+					users.value.find((_user) => _participant === _user.username)
+				),
 			}
 		})
 	)
 
 	const currentConversation = computed(() => {
-		return conversationsRef.value.find(
+		return conversations.value.find(
 			(conversation) => conversation.id === currentConversationId.value
 		)
 	})
@@ -73,9 +83,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 
 			return false
 		} else
-			return availableUsernames.value.includes(
-				currentConversation.value.participants[1]
-			)
+			return (<User>currentConversation.value.participants[1]).isOnline ?? false
 	})
 
 	return {
@@ -130,8 +138,8 @@ export const useMessengerStore = defineStore('messenger', () => {
 			return 'Groupe: ' + stringReturn.substring(0, stringReturn.length - 2)
 		} else {
 			return Object.entries(currentConversation.value?.nicknames || {})
-				.filter(([usernameKey]) => usernameKey === username)
-				.map((array) => array[1])
+				.filter(([_username]) => _username === username)
+				.map(([, nickname]) => nickname)
 				.toString()
 		}
 	}
@@ -258,10 +266,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 		}
 	}
 
-	function upsertConversationTheme(
-		conversation_id: string,
-		theme: 'BLUE' | 'RED' | 'RAINBOW'
-	) {
+	function upsertConversationTheme(conversation_id: string, theme: Theme) {
 		const conversationIndex = conversationsRef.value.findIndex(
 			(_conversation) => _conversation.id === conversation_id.toString()
 		)
