@@ -285,7 +285,6 @@ const usersWriting = computed(() => {
 		.filter(([username]) => username !== authenticatedUsername.value)
 		.filter(function (value) {
 			const dateString = value[1]
-			console.log(dateString)
 			const now = timeRef.value.getTime()
 			const delayInSeconds = now - 10 * 1000
 
@@ -363,6 +362,25 @@ function getViewerNickname(nickname: string): string {
 
 function resetConvTitleValue(): void {
 	inputNewTitle.value = ''
+}
+
+/**
+ * Returns true if the targeted message was sent after less than 10 minutes than the previous one.
+ */
+const isShortTime = (message: MessageType, messages: MessageType[]) => {
+	return computed((): boolean => {
+		const index = messages.findIndex((_message) => _message.id === message.id)
+		if (!messages[index - 1]) return true
+		if (messages[index - 1].from !== message.from) return true
+
+		if (
+			convertStringToDate(messages[index - 1].posted_at).getTime() + 600000 <
+			convertStringToDate(message.posted_at).getTime()
+		)
+			return true
+
+		return false
+	}).value
 }
 
 updateSeenMessage()
@@ -451,7 +469,7 @@ updateSeenMessage()
 							class="message-container"
 							v-for="message in messages"
 							:key="message.id">
-							<div class="time">
+							<div v-if="isShortTime(message, messages)" class="time">
 								{{
 									convertStringToDate(message.posted_at).toLocaleTimeString()
 								}}
