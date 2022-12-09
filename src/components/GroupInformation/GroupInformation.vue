@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
+import { DEFAULT_PROFILE_PICTURE } from '@/constants'
 import { useMessengerStore } from '@/stores/messenger'
 
 const messengerStore = useMessengerStore()
@@ -53,7 +54,7 @@ function getProfilePicture(participants: string[]): string {
 	)
 	const user = users.value.find((user) => user.username === username)
 	if (!user) {
-		return 'https://yt3.ggpht.com/JliOszS4fXEpCIs2it_vsBjwhlNWgZsboezGA7NYUtihf8F54A5I7laaj2d3zpH-io6e2fVL=s900-c-k-c0x00ffffff-no-rj' // Mmmmmh
+		return DEFAULT_PROFILE_PICTURE
 	}
 
 	return user.picture_url
