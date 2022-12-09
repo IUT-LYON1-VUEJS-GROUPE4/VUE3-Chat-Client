@@ -98,6 +98,7 @@ function resetNicknameValue(): void {
 					;[(participantChangeNickname = member.username), resetNicknameValue()]
 				"></i>
 			<i
+				v-if="members.length > 3"
 				@click="removeParticipant(member.username)"
 				title="Enlever de la conversation"
 				class="circular times icon link"
