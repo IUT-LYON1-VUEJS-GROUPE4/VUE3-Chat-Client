@@ -217,7 +217,7 @@ async function deleteMessage(messageId: string): Promise<void> {
 
 function getClass(message: MessageType, messages: MessageType[]): string {
 	let c =
-		computed(() => {
+		(() => {
 			const index = messages.findIndex((_message) => _message.id === message.id)
 			const previousMessage = messages[index - 1]
 			const nextMessage = messages[index + 1]
@@ -244,37 +244,30 @@ function getClass(message: MessageType, messages: MessageType[]): string {
 			)
 				result = 'middle'
 			return result
-		}).value ?? 'middle'
+		})() ?? 'middle'
 
-	if (currentConversation.value?.theme === 'BLUE') {
-		c += ' blue'
-	} else if (currentConversation.value?.theme === 'RED') {
-		c += ' red'
-	} else {
-		c += ' rainbow'
-	}
+	c += ' ' + currentConversation.value?.theme.toLowerCase()
 
 	return c
 }
 
-const messageSeen = (messageID: string) =>
-	computed(() => {
-		if (!currentConversation.value) return []
-		const views = currentConversation.value.seen
-		const viewArray: {
-			id: number
-			user: string
-			message_id: string
-			time: string
-		}[] = []
-		let id = 0
-		for (const view in views) {
-			const value = views[view]
-			if (value === -1 || value.message_id !== messageID) continue
-			viewArray.push({ id: id++, user: view, ...value })
-		}
-		return viewArray
-	}).value
+const messageSeen = (messageID: string) => {
+	if (!currentConversation.value) return []
+	const views = currentConversation.value.seen
+	const viewArray: {
+		id: number
+		user: string
+		message_id: string
+		time: string
+	}[] = []
+	let id = 0
+	for (const view in views) {
+		const value = views[view]
+		if (value === -1 || value.message_id !== messageID) continue
+		viewArray.push({ id: id++, user: view, ...value })
+	}
+	return viewArray
+}
 
 const timeRef = ref(new Date())
 
@@ -371,8 +364,11 @@ function resetConvTitleValue(): void {
 /**
  * Returns true if the targeted message was sent after less than 10 minutes than the previous one.
  */
-const isShortTime = (message: MessageType, messages: MessageType[]) => {
-	return computed((): boolean => {
+const isShortTime = (
+	message: MessageType,
+	messages: MessageType[]
+): boolean => {
+	return (() => {
 		const index = messages.findIndex((_message) => _message.id === message.id)
 		if (!messages[index - 1]) return true
 		if (messages[index - 1].from !== message.from) return true
@@ -384,7 +380,7 @@ const isShortTime = (message: MessageType, messages: MessageType[]) => {
 			return true
 
 		return false
-	}).value
+	})()
 }
 
 updateSeenMessage()
