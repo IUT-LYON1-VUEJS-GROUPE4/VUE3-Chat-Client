@@ -1,7 +1,15 @@
 .message {
 	color: black;
 	padding: 2.5px 0;
-	display: flex;
+	display: flex;	
+}
+
+.mw-100 {
+	max-width: 100%;
+}
+
+.break-word {
+	word-wrap: break-word;
 }
 
 .message img {
