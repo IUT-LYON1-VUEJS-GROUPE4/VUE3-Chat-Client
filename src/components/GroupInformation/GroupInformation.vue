@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
 import { useMessengerStore } from '@/stores/messenger'
+import type { UserSeen } from '@/client/types/business';
 
 const messengerStore = useMessengerStore()
 
@@ -19,18 +20,24 @@ const participants: {
 	seen: -1 | { message_id: string; time: string }
 }[] = conversation.participants.map((participant: string) => {
 	let nickname: string = '-'
-	let seen: -1 | { message_id: string; time: string } = -1
+	let seen: UserSeen
 	let numberOfMessages: number = 0
 
 	if (conversation.nicknames[participant])
 		nickname = conversation.nicknames[participant]
-	if (conversation.seen[participant]) {
-		seen = conversation.seen[participant]
-	}
 
-	if (conversation.messages.find((message) => message.from === participant)) {
+    // const seen = conversation.seen.find(_seen = )
+	// if () {
+	// 	seen = conversation.seen[participant]
+	// }
+
+	if (
+		conversation.messages.find(
+			(message) => message.from.username === participant
+		)
+	) {
 		numberOfMessages = conversation.messages.filter(
-			(message) => message.from === participant
+			(message) => message.from.username === participant
 		).length
 	}
 
@@ -38,7 +45,7 @@ const participants: {
 		name: participant,
 		nickname: nickname,
 		numberOfMessages: numberOfMessages,
-		seen: seen,
+		seen: {},
 	}
 })
 </script>

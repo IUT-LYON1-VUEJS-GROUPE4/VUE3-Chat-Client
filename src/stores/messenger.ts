@@ -6,35 +6,40 @@ import {
 } from '@/assets/constants'
 import type {
 	Conversation,
+	ExtendedMessage,
 	Message,
 	Theme,
 	User,
+	UserSeen,
 } from '@/client/types/business'
 import { useAuthStore } from '@/stores/auth'
+import type {
+	ExtendedConversation,
+	ExtendedUser,
+} from '../client/types/business'
 
-export interface UserSeen {
-	user: User
-	message_id: string
-	time: string
-	label: string
-}
-
-function getConversationTitle(conversation: Conversation): string {
+function getConversationTitle(
+	conversation: Conversation,
+	usersConversation: ExtendedUser[]
+): string {
 	if (conversation.title) return conversation.title
 
 	if (conversation.participants.length > 2) {
 		return `Groupe: ${conversation.participants.join(', ')}`
 	}
 
-	const user = conversation.users.find((user) => !user.isMe)
+	const user = usersConversation.find((user) => !user.isMe)
 	if (user) return user.username
 	return 'Anonymous'
 }
 
-function getConversationPictureUrl(conversation: Conversation): string {
+function getConversationPictureUrl(
+	conversation: Conversation,
+	usersConversation: ExtendedUser[]
+): string {
 	if (conversation.type === 'one_to_one') {
 		return (
-			conversation.users.find((_user) => !_user.isMe)?.picture_url ??
+			usersConversation.find((_user) => !_user.isMe)?.picture_url ??
 			DEFAULT_PROFILE_PICTURE
 		)
 	}
@@ -42,13 +47,16 @@ function getConversationPictureUrl(conversation: Conversation): string {
 	return DEFAULT_PROFILE_PICTURE
 }
 
-function getConversationSeenUser(conversation: Conversation): UserSeen[] {
+function getConversationSeenUser(
+	conversation: Conversation,
+	usersConversation: ExtendedUser[]
+): UserSeen[] {
 	const seenArray: UserSeen[] = []
 	for (const username in conversation.seen) {
 		const see = conversation.seen[username]
 		if (typeof see === 'number') continue
 		const userSee = <User>(
-			conversation.users.find((_user) => username === _user.username)
+			usersConversation.find((_user) => username === _user.username)
 		)
 		const nickname = conversation.nicknames[userSee.username]
 		seenArray.push({
@@ -83,7 +91,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 	const authenticatedUsername = computed(() => userRef.value?.username || null)
 
 	const users = computed(() =>
-		usersRef.value.map((user) => {
+		usersRef.value.map((user): ExtendedUser => {
 			return {
 				...user,
 				isOnline: availableUsernames.value.includes(user.username),
@@ -93,30 +101,38 @@ export const useMessengerStore = defineStore('messenger', () => {
 	)
 
 	const conversations = computed(() =>
-		conversationsRef.value.map((conversation) => {
-			conversation.users = users.value.filter((_user: User) =>
-				conversation.participants.includes(_user.username)
-			)
-			return {
-				...conversation,
-				isOnline: conversation.users.some(
-					(_user) => _user.isOnline && !_user.isMe
-				),
-				title: getConversationTitle(conversation),
-				picture_url: getConversationPictureUrl(conversation),
-				messages: conversation.messages.map((message: Message): Message => {
-					return {
-						...message,
-						fromUser: <User>(
-							conversation.users.find(
-								(_user) => _user.username === message.from
-							)
-						),
-					}
-				}),
-				seenUser: getConversationSeenUser(conversation),
+		conversationsRef.value.map(
+			(conversation: Conversation): ExtendedConversation => {
+				const usersConversation = users.value.filter((_user: User) =>
+					conversation.participants.includes(_user.username)
+				)
+				return {
+					...conversation,
+					users: usersConversation,
+					isOnline: usersConversation.some(
+						(_user) => _user.isOnline && !_user.isMe
+					),
+					title: getConversationTitle(conversation, usersConversation),
+					picture_url: getConversationPictureUrl(
+						conversation,
+						usersConversation
+					),
+					messages: conversation.messages.map(
+						(message: Message): ExtendedMessage => {
+							return {
+								...message,
+								from: <ExtendedUser>(
+									usersConversation.find(
+										(_user) => _user.username === message.from
+									)
+								),
+							}
+						}
+					),
+					seen: getConversationSeenUser(conversation, usersConversation),
+				}
 			}
-		})
+		)
 	)
 
 	const currentConversation = computed(() => {

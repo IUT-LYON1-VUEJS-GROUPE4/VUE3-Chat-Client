@@ -8,8 +8,9 @@ export type User = {
 	username: string
 	picture_url: string
 	awake: boolean
+}
 
-	// Front only
+export interface ExtendedUser extends User {
 	isOnline: boolean
 	isMe: boolean
 }
@@ -25,9 +26,17 @@ export type Message = {
 	edited: boolean
 	deleted: boolean
 	reactions: Record<string, Reaction>
+}
 
-	// Front only
-	fromUser: User
+export interface ExtendedMessage extends Omit<Message, 'from'> {
+	from: ExtendedUser
+}
+
+export interface UserSeen {
+	user: User
+	message_id: string
+	time: string
+	label: string
 }
 
 export type Conversation = {
@@ -41,11 +50,15 @@ export type Conversation = {
 	updated_at: string
 	seen: Record<string, -1 | { message_id: string; time: string }>
 	typing: Record<string, string>
+}
 
-	// Front only
+export interface ExtendedConversation
+	extends Omit<Conversation, 'messages' | 'seen'> {
+	messages: ExtendedMessage[]
 	users: User[]
 	isOnline: boolean
 	picture_url: string
+	seen: UserSeen[]
 }
 
 export type Reaction = 'HEART' | 'THUMB' | 'HAPPY' | 'SAD'
