@@ -1,4 +1,9 @@
-import type {Conversation, Message, Theme, User} from '@/client/types/business'
+import type {
+	Conversation,
+	Message,
+	Theme,
+	User,
+} from '@/client/types/business'
 
 export interface Event {
 	event: string

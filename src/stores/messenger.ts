@@ -117,11 +117,11 @@ export const useMessengerStore = defineStore('messenger', () => {
 						conversation,
 						usersConversation
 					),
-					messages: conversation.messages.map(
+					messagesExtend: conversation.messages.map(
 						(message: Message): ExtendedMessage => {
 							return {
 								...message,
-								from: <ExtendedUser>(
+								fromUser: <ExtendedUser>(
 									usersConversation.find(
 										(_user) => _user.username === message.from
 									)
@@ -129,7 +129,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 							}
 						}
 					),
-					seen: getConversationSeenUser(conversation, usersConversation),
+					seenUser: getConversationSeenUser(conversation, usersConversation),
 				}
 			}
 		)

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, toRefs, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import type { User } from '@/client/types/business'
+import type { ExtendedUser } from '@/client/types/business'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useMessengerStore } from '@/stores/messenger'
 
@@ -44,7 +44,7 @@ async function addParticipant(username: string): Promise<void> {
 	await clientEmits.addParticipant(username, id)
 }
 
-async function removeParticipant(user: User): Promise<void> {
+async function removeParticipant(user: ExtendedUser): Promise<void> {
 	const conv = currentConversation.value
 	if (!conv) return
 	if (conv.participants.length <= 3) return

@@ -3,15 +3,15 @@ import { computed, onMounted, onUpdated, ref, toRefs, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { DEFAULT_PROFILE_PICTURE } from '@/assets/constants.js'
 import type {
-	Message as MessageType,
 	Reaction,
 	Theme,
+	UserSeen,
+	ExtendedMessage,
 } from '@/client/types/business'
 import Group from '@/components/Group/Group.vue'
 import Message from '@/components/Message/Message.vue'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useMessengerStore } from '@/stores/messenger'
-import type { UserSeen } from '../../stores/messenger'
 
 const clientEmits = useHighLevelClientEmits()
 
@@ -34,7 +34,7 @@ const inputSentMessage = ref('')
 const inputNewTitle = ref('')
 
 const messages = computed(() => {
-	return currentConversation.value?.messages ?? []
+	return currentConversation.value?.messagesExtend ?? []
 })
 
 const typingEvent = () => {
@@ -144,7 +144,7 @@ function scrollBottom() {
 }
 
 function reactMessage($event: {
-	message: typeof Message
+	message: ExtendedMessage
 	react: Reaction
 }): void {
 	if (!currentConversation.value) return
@@ -174,7 +174,10 @@ async function deleteMessage(messageId: string): Promise<void> {
 	await clientEmits.deleteMessage(currentConversation.value.id, messageId)
 }
 
-function getClass(message: MessageType, messages: MessageType[]): string {
+function getClass(
+	message: ExtendedMessage,
+	messages: ExtendedMessage[]
+): string {
 	let c =
 		(() => {
 			const index = messages.findIndex((_message) => _message.id === message.id)
@@ -308,7 +311,7 @@ function resetConvTitleValue(): void {
 /**
  * Returns true if the targeted message was sent after less than 10 minutes than the previous one.
  */
-const isShortTime = (message: MessageType, messages: MessageType[]) => {
+const isShortTime = (message: ExtendedMessage, messages: ExtendedMessage[]) => {
 	return computed((): boolean => {
 		const index = messages.findIndex((_message) => _message.id === message.id)
 		if (!messages[index - 1]) return true

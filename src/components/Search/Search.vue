@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, toRefs } from 'vue'
-import type { Conversation } from '@/client/types/business'
+import type { ExtendedConversation } from '@/client/types/business'
 import { useMessengerStore } from '@/stores/messenger'
 
 const messengerStore = useMessengerStore()
@@ -9,7 +9,7 @@ const { conversations, authenticatedUsername } = toRefs(messengerStore)
 
 const searchInput = ref('')
 
-function filteredMessage(conv: Conversation) {
+function filteredMessage(conv: ExtendedConversation) {
 	return conv.messages.filter((mess) => {
 		return mess.content?.toLowerCase().includes(searchInput.value.toLowerCase())
 	})

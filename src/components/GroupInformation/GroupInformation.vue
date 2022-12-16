@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
+import type { ExtendedUser, ParticipantInfo } from '@/client/types/business'
 import { useMessengerStore } from '@/stores/messenger'
-import type { UserSeen } from '@/client/types/business';
 
 const messengerStore = useMessengerStore()
 
@@ -13,41 +13,23 @@ if (!conversation) throw new Error('CurrentConversation is undefined')
 
 const date = new Date(conversation.updated_at)
 
-const participants: {
-	name: string
-	nickname: string | undefined
-	numberOfMessages: number
-	seen: -1 | { message_id: string; time: string }
-}[] = conversation.participants.map((participant: string) => {
-	let nickname: string = '-'
-	let seen: UserSeen
-	let numberOfMessages: number = 0
-
-	if (conversation.nicknames[participant])
-		nickname = conversation.nicknames[participant]
-
-    // const seen = conversation.seen.find(_seen = )
-	// if () {
-	// 	seen = conversation.seen[participant]
-	// }
-
-	if (
-		conversation.messages.find(
-			(message) => message.from.username === participant
+const participants: ParticipantInfo[] = conversation.users.map(
+	(participant: ExtendedUser) => {
+		const seen = conversation.seenUser.find(
+			(_seen) => _seen.user.username === participant.username
 		)
-	) {
-		numberOfMessages = conversation.messages.filter(
-			(message) => message.from.username === participant
-		).length
+		if (!seen) throw new Error('Participant seen is undefined')
+		return {
+			name: participant.username,
+			nickname: conversation.nicknames[participant.username] ?? '-',
+			numberOfMessages: (() =>
+				conversation.messagesExtend.filter(
+					(message) => message.from === participant.username
+				).length ?? 0)(),
+			seen,
+		}
 	}
-
-	return {
-		name: participant,
-		nickname: nickname,
-		numberOfMessages: numberOfMessages,
-		seen: {},
-	}
-})
+)
 </script>
 
 <template>
@@ -79,11 +61,7 @@ const participants: {
 					<td>{{ participant.name }}</td>
 					<td>{{ participant.nickname }}</td>
 					<td>
-						{{
-							participant.seen === -1
-								? '-'
-								: `${new Date(participant.seen.time).toLocaleString()}`
-						}}
+						{{ `${new Date(participant.seen.time).toLocaleString()}` }}
 					</td>
 					<td>{{ participant.numberOfMessages }}</td>
 				</tr>

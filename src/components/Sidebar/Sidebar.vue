@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { toRefs, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import type { Conversation } from '@/client/types/business'
+import type { ExtendedConversation } from '@/client/types/business'
 import { useAuthStore } from '@/stores/auth'
 import { useMessengerStore } from '@/stores/messenger'
 
@@ -27,16 +27,16 @@ function openMessageSearch() {
 	router.push({ name: 'Search' })
 }
 
-function openConversation(id: Conversation['id']) {
+function openConversation(id: ExtendedConversation['id']) {
 	router.push({ name: 'Conversation', params: { id } })
 }
 
 const filteredConversations = computed(() => {
 	if (searchInput.value === '') return sortConversations(conversations.value)
 
-	const conversationsResult: Conversation[] = []
+	const conversationsResult: ExtendedConversation[] = []
 
-	conversations.value.forEach((conversation: Conversation) => {
+	conversations.value.forEach((conversation: ExtendedConversation) => {
 		let alreadyFounded = false
 		for (const participants in conversation.participants) {
 			if (
@@ -60,7 +60,9 @@ const filteredConversations = computed(() => {
 	return sortConversations(conversationsResult)
 })
 
-function sortConversations(conversations: Conversation[]): Conversation[] {
+function sortConversations(
+	conversations: ExtendedConversation[]
+): ExtendedConversation[] {
 	return conversations.sort((a, b) =>
 		(b.messages.length === 0
 			? b.updated_at
@@ -73,7 +75,9 @@ function sortConversations(conversations: Conversation[]): Conversation[] {
 	)
 }
 
-function conversationClassNewConditions(conversation: Conversation): boolean {
+function conversationClassNewConditions(
+	conversation: ExtendedConversation
+): boolean {
 	return (
 		(authenticatedUsername.value &&
 			conversation.seen[String(authenticatedUsername.value)] === -1) ||
@@ -151,7 +155,7 @@ function conversationClassNewConditions(conversation: Conversation): boolean {
 					<img
 						v-if="conversation.participants.length < 3"
 						:src="conversation.picture_url"
-						:alt="`Photo de Conversation #${conversation.id}`" />
+						:alt="`Photo de ExtendedConversation #${conversation.id}`" />
 					<span v-else>
 						<i
 							class="users icon"

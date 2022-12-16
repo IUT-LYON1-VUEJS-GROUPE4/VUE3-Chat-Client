@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { toRefs, ref, computed } from 'vue'
-import type { User } from '@/client/types/business'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useMessengerStore } from '@/stores/messenger'
+import type { ExtendedUser } from '../../client/types/business'
 
 const messengerStore = useMessengerStore()
 
@@ -13,9 +13,9 @@ const { users } = toRefs(messengerStore)
 const searchInput = ref('')
 
 const openingConversation = ref(false)
-const selectedUsers = ref<User[]>([])
+const selectedUsers = ref<ExtendedUser[]>([])
 
-async function openConversation(users: User[]) {
+async function openConversation(users: ExtendedUser[]) {
 	if (users.length === 0) return
 
 	openingConversation.value = true
@@ -28,11 +28,11 @@ async function openConversation(users: User[]) {
 	}
 }
 
-function userIsSelected(user: User): boolean {
+function userIsSelected(user: ExtendedUser): boolean {
 	return selectedUsers.value.includes(user)
 }
 
-function toggleUser(user: User): void {
+function toggleUser(user: ExtendedUser): void {
 	if (user.isMe) return
 	if (userIsSelected(user)) {
 		selectedUsers.value.splice(selectedUsers.value.indexOf(user), 1)

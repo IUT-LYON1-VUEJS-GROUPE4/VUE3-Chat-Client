@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import type {Auth, Conversation, Message, Reaction, User} from '@/client/types/business'
+import type {
+	Auth,
+	Conversation,
+	Message,
+	Reaction,
+	User,
+} from '@/client/types/business'
 
 export interface Emit {
 	event: string

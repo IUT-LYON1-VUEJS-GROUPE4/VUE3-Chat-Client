@@ -28,8 +28,8 @@ export type Message = {
 	reactions: Record<string, Reaction>
 }
 
-export interface ExtendedMessage extends Omit<Message, 'from'> {
-	from: ExtendedUser
+export interface ExtendedMessage extends Message {
+	fromUser: ExtendedUser
 }
 
 export interface UserSeen {
@@ -52,13 +52,19 @@ export type Conversation = {
 	typing: Record<string, string>
 }
 
-export interface ExtendedConversation
-	extends Omit<Conversation, 'messages' | 'seen'> {
-	messages: ExtendedMessage[]
-	users: User[]
+export interface ExtendedConversation extends Conversation {
+	messagesExtend: ExtendedMessage[]
+	users: ExtendedUser[]
 	isOnline: boolean
 	picture_url: string
-	seen: UserSeen[]
+	seenUser: UserSeen[]
+}
+
+export interface ParticipantInfo {
+	name: string
+	nickname: string | undefined
+	numberOfMessages: number
+	seen: UserSeen
 }
 
 export type Reaction = 'HEART' | 'THUMB' | 'HAPPY' | 'SAD'

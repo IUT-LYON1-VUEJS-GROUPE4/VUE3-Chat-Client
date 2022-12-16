@@ -61,7 +61,7 @@ const editMessage = () => emit('edit-message')
 </script>
 
 <template>
-	<div v-if="props.message.from.isMe" class="message mine">
+	<div v-if="props.message.fromUser.isMe" class="message mine">
 		<div class="bubble" :class="props.class">
 			<p
 				v-if="props.message.reply_to"
@@ -106,8 +106,8 @@ const editMessage = () => emit('edit-message')
 				props.class.includes('bottom') || props.class.includes('top bottom')
 			"
 			:title="`${props.message.from} ${titleNickName}`"
-			:src="props.message.from.picture_url"
-			:alt="props.message.from.username" />
+			:src="props.message.fromUser.picture_url"
+			:alt="props.message.from" />
 		<div class="bubble" :class="props.class">
 			<p v-if="props.message.reply_to" class="reply_content">
 				{{
