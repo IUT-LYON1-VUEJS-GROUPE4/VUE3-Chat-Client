@@ -5,7 +5,7 @@ import { useMessengerStore } from '@/stores/messenger'
 
 const messengerStore = useMessengerStore()
 
-const { conversations, users, authenticatedUsername } = toRefs(messengerStore)
+const { conversations, authenticatedUsername } = toRefs(messengerStore)
 
 const searchInput = ref('')
 
@@ -89,21 +89,11 @@ function filteredMessage(conv: Conversation) {
 							<img
 								class="img-profil-search"
 								:src="
-									conversation.participants[0] === authenticatedUsername
-										? users.find(
-												(item) => item.username === conversation.participants[1]
-										  )?.picture_url
-										: users.find(
-												(item) => item.username === conversation.participants[0]
-										  )?.picture_url
+									conversation.users.find((_user) => !_user.isMe).picture_url
 								"
 								:alt="`Photo de ${conversation.participants[1]}`" />
 							<span>
-								{{
-									conversation.participants[0] === authenticatedUsername
-										? conversation.participants[1]
-										: conversation.participants[0]
-								}}
+								{{ conversation.users.find((_user) => !_user.isMe).username }}
 							</span>
 						</div>
 

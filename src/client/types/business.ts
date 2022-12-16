@@ -8,14 +8,16 @@ export type User = {
 	username: string
 	picture_url: string
 	awake: boolean
-	isOnline?: boolean
-	isMe?: boolean
+
+	// Front only
+	isOnline: boolean
+	isMe: boolean
 }
 
 export type Conversation = {
 	id: string
 	type: 'one_to_one' | 'many_to_many'
-	participants: string[] | User[]
+	participants: string[]
 	messages: Message[]
 	title: string | null
 	theme: Theme
@@ -23,6 +25,10 @@ export type Conversation = {
 	updated_at: string
 	seen: Record<string, -1 | { message_id: string; time: string }>
 	typing: Record<string, string>
+
+	// Front only
+	users: User[]
+	isOnline: boolean
 }
 
 export type Message = {

@@ -27,7 +27,6 @@ const messengerStore = useMessengerStore()
 
 const {
 	users,
-	participantsAreOnline,
 	currentConversation,
 	authenticatedUsername,
 	currentConversationParticipants,
@@ -127,7 +126,7 @@ function updateSeenMessage() {
 	if (
 		!currentConversation.value ||
 		!messages.value ||
-		authenticatedUsername.value === null
+		!authenticatedUsername.value
 	)
 		return
 	const messageId = messages.value[messages.value.length - 1]?.id
@@ -156,12 +155,10 @@ function titleConversation(conversation: Conversation): string {
 		return `Groupe: ${currentConversationParticipants.value.join(', ')}`
 	}
 
-	const participant = conversation.participants.find(
-		(participant) => participant !== authenticatedUsername.value
-	)
+	const user = conversation.users.find((user) => !user.isMe)
 
-	if (participant) {
-		return participant
+	if (user) {
+		return user.username
 	}
 
 	return 'Anonymous'
@@ -318,9 +315,9 @@ function muteConversation(): void {
 	if (!currentConversation.value) return
 
 	let conversationsMute = []
+
 	const json = localStorage.getItem('conversationMuteId')
 
-	//TODO: faire un truc (indice useSorage)
 	if (json == null) {
 		conversationsMute.push(currentConversation.value.id)
 	} else {
@@ -377,7 +374,6 @@ const isShortTime = (message: MessageType, messages: MessageType[]) => {
 		)
 	}).value
 }
-
 updateSeenMessage()
 </script>
 
@@ -402,7 +398,9 @@ updateSeenMessage()
 				<div class="ui compact">
 					<i
 						v-if="currentConversation"
-						:class="{ 'icon circle': participantsAreOnline }"></i>
+						:class="{
+							'icon circle': currentConversation.isOnline,
+						}"></i>
 					<span v-if="currentConversation">
 						{{ titleConversation(currentConversation) }}
 						<br />

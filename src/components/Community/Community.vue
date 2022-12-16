@@ -10,8 +10,6 @@ const clientEmits = useHighLevelClientEmits()
 
 const { users } = toRefs(messengerStore)
 
-const { availableUsernames, authenticatedUsername } = toRefs(messengerStore)
-
 const searchInput = ref('')
 
 const openingConversation = ref(false)
@@ -35,7 +33,7 @@ function userIsSelected(user: User): boolean {
 }
 
 function toggleUser(user: User): void {
-	if (user.username === authenticatedUsername.value) return
+	if (user.isMe) return
 	if (userIsSelected(user)) {
 		selectedUsers.value.splice(selectedUsers.value.indexOf(user), 1)
 	} else {

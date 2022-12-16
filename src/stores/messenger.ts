@@ -40,10 +40,14 @@ export const useMessengerStore = defineStore('messenger', () => {
 
 	const conversations = computed(() =>
 		conversationsRef.value.map((conversation) => {
+			const usersConversation = users.value.filter((_user: User) =>
+				conversation.participants.includes(_user.username)
+			)
 			return {
 				...conversation,
-				participants: conversation.participants.map((_participant) =>
-					users.value.find((_user) => _participant === _user.username)
+				users: usersConversation,
+				isOnline: usersConversation.some(
+					(_user) => _user.isOnline && !_user.isMe
 				),
 			}
 		})
@@ -65,27 +69,6 @@ export const useMessengerStore = defineStore('messenger', () => {
 			) ?? []
 	)
 
-	/**
-	 * **ManyToMany Conversation**
-	 *
-	 * Current conversation participants are authenticated
-	 *
-	 * Need only one participant online to return true
-	 */
-	const participantsAreOnline = computed((): boolean => {
-		if (!currentConversation.value) return false
-		if (currentConversation.value.participants.length > 2) {
-			const allMember = currentConversationParticipants.value
-
-			for (const member in allMember) {
-				if (availableUsernames.value.includes(member)) return true
-			}
-
-			return false
-		} else
-			return (<User>currentConversation.value.participants[1]).isOnline ?? false
-	})
-
 	return {
 		authenticatedUsername,
 		users,
@@ -93,7 +76,6 @@ export const useMessengerStore = defineStore('messenger', () => {
 		conversations,
 		currentConversation,
 		currentConversationParticipants,
-		participantsAreOnline,
 		setConversations,
 		setCurrentConversationId,
 		setUsers,

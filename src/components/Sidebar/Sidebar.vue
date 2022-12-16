@@ -2,6 +2,7 @@
 import { toRefs, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Conversation } from '@/client/types/business'
+import type { User } from '@/client/types/business'
 import { DEFAULT_PROFILE_PICTURE } from '@/constants'
 import { useAuthStore } from '@/stores/auth'
 import { useMessengerStore } from '@/stores/messenger'
@@ -17,13 +18,8 @@ const { logout } = authStore
 
 const searchInput = ref('')
 
-const {
-	availableUsernames,
-	conversations,
-	users,
-	authenticatedUsername,
-	currentConversation,
-} = toRefs(messengerStore)
+const { conversations, authenticatedUsername, currentConversation } =
+	toRefs(messengerStore)
 
 function openCommunity() {
 	router.push({ name: 'Community' })
@@ -66,11 +62,12 @@ const filteredConversations = computed(() => {
 	return sortConversations(conversationsResult)
 })
 
-function getProfilePicture(participants: string[]): string {
-	const username = participants.find(
-		(participant) => participant !== authenticatedUsername.value
-	)
-	const user = users.value.find((user) => user.username === username)
+function getProfilePicture(users: User[]): string {
+	if (users.length > 2) {
+		return DEFAULT_PROFILE_PICTURE
+	}
+
+	const user = users.find((_user) => !_user.isMe)
 	if (!user) {
 		return DEFAULT_PROFILE_PICTURE
 	}
@@ -85,12 +82,10 @@ function titleConversation(conversation: Conversation): string {
 		return `Groupe: ${conversation.participants.join(', ')}`
 	}
 
-	const participant = conversation.participants.find(
-		(participant) => participant !== authenticatedUsername.value
-	)
+	const user = conversation.users.find((_user) => !_user.isMe)
 
-	if (participant) {
-		return participant
+	if (user) {
+		return user.username
 	}
 
 	return 'Anonymous'
@@ -117,19 +112,6 @@ function conversationClassNewConditions(conversation: Conversation): boolean {
 			?.message_id !==
 			conversation.messages[conversation.messages.length - 1].id
 	)
-}
-
-function isOnlineConversation(participants: string[]): boolean {
-	participants = participants.filter(
-		(participant) => participant !== authenticatedUsername.value
-	)
-	let participantIsOnline = false
-	participants.forEach((participant: string) => {
-		if (availableUsernames.value.includes(participant)) {
-			participantIsOnline = true
-		}
-	})
-	return participantIsOnline
 }
 </script>
 
@@ -191,7 +173,7 @@ function isOnlineConversation(participants: string[]): boolean {
 				:class="{
 					selected: conversation.id === currentConversation?.id,
 					new: conversationClassNewConditions(conversation),
-					available: isOnlineConversation(conversation.participants),
+					available: conversation.isOnline,
 				}"
 				:key="conversation.id"
 				:title="titleConversation(conversation)"
@@ -199,7 +181,7 @@ function isOnlineConversation(participants: string[]): boolean {
 				<a class="avatar">
 					<img
 						v-if="conversation.participants.length < 3"
-						:src="getProfilePicture(conversation.participants)"
+						:src="getProfilePicture(conversation.users)"
 						:alt="`Photo de Conversation #${conversation.id}`" />
 					<span v-else>
 						<i
@@ -211,7 +193,7 @@ function isOnlineConversation(participants: string[]): boolean {
 					<div class="metadata">
 						<div class="title">
 							<i
-								v-if="isOnlineConversation(conversation.participants)"
+								v-if="conversation.isOnline"
 								class="ui small icon circle green"></i>
 							{{ titleConversation(conversation) }}
 						</div>
