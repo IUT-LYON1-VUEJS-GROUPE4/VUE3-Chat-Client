@@ -81,6 +81,8 @@
 	background: #f1f0f0;
 	padding: 6px 16px;
 	border-radius: 16px;
+    max-width: 45%;
+    word-wrap: break-word;
 }
 
 .mine {

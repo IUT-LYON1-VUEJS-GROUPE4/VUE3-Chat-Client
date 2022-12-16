@@ -210,8 +210,6 @@ function getClass(
 
 	c += ' ' + currentConversation.value?.theme.toLowerCase()
 
-	c += ' mw-100'
-
 	return c
 }
 
