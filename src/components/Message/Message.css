@@ -1,15 +1,7 @@
 .message {
 	color: black;
 	padding: 2.5px 0;
-	display: flex;	
-}
-
-.mw-100 {
-	max-width: 100%;
-}
-
-.break-word {
-	word-wrap: break-word;
+	display: flex;
 }
 
 .message img {
@@ -22,6 +14,8 @@
 
 .bubble {
 	margin-left: 42px;
+    max-width: 45%;
+    word-wrap: break-word;
 }
 
 img + .bubble {
