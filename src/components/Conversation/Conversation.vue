@@ -254,6 +254,8 @@ function getClass(message: MessageType, messages: MessageType[]): string {
 		c += ' rainbow'
 	}
 
+	c += ' mw-100'
+
 	return c
 }
 
