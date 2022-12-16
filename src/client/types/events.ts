@@ -1,4 +1,9 @@
-import type { Conversation, Message, User } from '@/client/types/business'
+import type {
+	Conversation,
+	Message,
+	Theme,
+	User,
+} from '@/client/types/business'
 
 export interface Event {
 	event: string
@@ -35,14 +40,6 @@ export interface ParticipantRemovedEvent extends Event {
 
 export interface MessagePostedEvent extends Event {
 	event: '@messagePosted'
-	payload: {
-		conversation_id: string
-		message: Message
-	}
-}
-
-export interface MessageDeliveredEvent extends Event {
-	event: '@messageDelivered'
 	payload: {
 		conversation_id: string
 		message: Message
@@ -100,7 +97,7 @@ export interface ConversationThemeSetEvent extends Event {
 	event: '@conversationThemeSet'
 	payload: {
 		conversation_id: string
-		theme: 'BLUE' | 'RED' | 'RAINBOW'
+		theme: Theme
 	}
 }
 

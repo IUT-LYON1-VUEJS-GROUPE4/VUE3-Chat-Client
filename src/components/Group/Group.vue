@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, toRefs, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import type { ExtendedUser } from '@/client/types/business'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useMessengerStore } from '@/stores/messenger'
 
@@ -9,8 +10,7 @@ const router = useRouter()
 const clientEmits = useHighLevelClientEmits()
 const messengerStore = useMessengerStore()
 
-const { users, currentConversation, getNickname, authenticatedUsername } =
-	toRefs(messengerStore)
+const { users, currentConversation, getNickname } = toRefs(messengerStore)
 
 const search = ref('')
 const inputNewNickname = ref('')
@@ -41,19 +41,19 @@ async function addParticipant(username: string): Promise<void> {
 	const id = currentConversation.value?.id
 	if (!id) return
 
-	clientEmits.addParticipant(username, id)
+	await clientEmits.addParticipant(username, id)
 }
 
-async function removeParticipant(username: string): Promise<void> {
+async function removeParticipant(user: ExtendedUser): Promise<void> {
 	const conv = currentConversation.value
 	if (!conv) return
 	if (conv.participants.length <= 3) return
 
 	const id = conv.id
-	clientEmits.removeParticipant(username, id)
+	await clientEmits.removeParticipant(user.username, id)
 
-	if (username === authenticatedUsername.value) {
-		router.push({
+	if (user.isMe) {
+		await router.push({
 			name: 'Community',
 		})
 	}
@@ -103,7 +103,7 @@ function resetNicknameValue(): void {
 				title="Modifier le surnom"
 				class="circular quote left link icon"
 				:class="{
-					'concombre-tordu': member.username === authenticatedUsername,
+					'concombre-tordu': member.isMe,
 				}"
 				data-bs-toggle="modal"
 				data-bs-target="#changeNicknameModal"
@@ -112,11 +112,11 @@ function resetNicknameValue(): void {
 				"></i>
 			<i
 				v-if="members.length > 3"
-				@click="removeParticipant(member.username)"
+				@click="removeParticipant(member)"
 				title="Enlever de la conversation"
 				class="circular times icon link"
 				:class="{
-					'concombre-tordu': member.username === authenticatedUsername,
+					'concombre-tordu': member.isMe,
 				}"
 				style=""></i>
 		</div>

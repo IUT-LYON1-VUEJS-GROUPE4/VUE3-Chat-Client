@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { toRefs, ref, computed } from 'vue'
-import type { User } from '@/client/types/business'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useMessengerStore } from '@/stores/messenger'
+import type { ExtendedUser } from '../../client/types/business'
 
 const messengerStore = useMessengerStore()
 
@@ -10,13 +10,12 @@ const clientEmits = useHighLevelClientEmits()
 
 const { users } = toRefs(messengerStore)
 
-const { availableUsernames, authenticatedUsername } = toRefs(messengerStore)
-
 const searchInput = ref('')
 
 const openingConversation = ref(false)
+const selectedUsers = ref<ExtendedUser[]>([])
 
-async function openConversation(users: User[]) {
+async function openConversation(users: ExtendedUser[]) {
 	if (users.length === 0) return
 
 	openingConversation.value = true
@@ -29,18 +28,12 @@ async function openConversation(users: User[]) {
 	}
 }
 
-const selectedUsers = ref<User[]>([])
-
-function userIsSelected(user: User): boolean {
+function userIsSelected(user: ExtendedUser): boolean {
 	return selectedUsers.value.includes(user)
 }
 
-function userIsOnLine(username: string): boolean {
-	return availableUsernames.value.includes(username)
-}
-
-function toggleUser(user: User): void {
-	if (user.username === authenticatedUsername.value) return
+function toggleUser(user: ExtendedUser): void {
+	if (user.isMe) return
 	if (userIsSelected(user)) {
 		selectedUsers.value.splice(selectedUsers.value.indexOf(user), 1)
 	} else {
@@ -78,7 +71,7 @@ const filteredUsers = computed(() =>
 				@click="toggleUser(user)"
 				:class="{ selected: userIsSelected(user) }">
 				<img :src="user.picture_url" :alt="`Photo de ${user.username}`" />
-				<span :class="{ available: userIsOnLine(user.username) }">
+				<span :class="{ available: user.isOnline }">
 					{{ user.username }}
 				</span>
 			</div>
