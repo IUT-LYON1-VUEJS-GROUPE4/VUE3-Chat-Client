@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUpdated, ref, toRefs, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { DEFAULT_PROFILE_PICTURE } from '@/assets/constants.js'
 import type {
-	Conversation,
-	Message as MessageType,
+	Reaction,
+	Theme,
+	UserSeen,
+	ExtendedMessage,
 } from '@/client/types/business'
 import Group from '@/components/Group/Group.vue'
 import Message from '@/components/Message/Message.vue'
@@ -22,14 +25,8 @@ const scrollElement = ref<HTMLElement | null>(null)
 
 const messengerStore = useMessengerStore()
 
-const {
-	users,
-	participantsAreOnline,
-	currentConversation,
-	authenticatedUsername,
-	currentConversationParticipants,
-	getNickname,
-} = toRefs(messengerStore)
+const { currentConversation, authenticatedUsername, getNickname } =
+	toRefs(messengerStore)
 
 const router = useRouter()
 
@@ -37,14 +34,21 @@ const inputSentMessage = ref('')
 const inputNewTitle = ref('')
 
 const messages = computed(() => {
-	return currentConversation.value?.messages ?? []
+	return currentConversation.value?.messagesExtend ?? []
 })
 
-const typedEvent = () => {
+const typingEvent = () => {
 	if (!currentConversation.value) return
 
 	clientEmits.TypeConversationEmit(currentConversation.value.id)
 }
+
+const isReplyMessage = ref(false)
+const replyMessage = ref({
+	user: '',
+	content: '',
+	messageId: '',
+})
 
 async function sendMessage(): Promise<void> {
 	if (!currentConversation.value) return
@@ -54,18 +58,18 @@ async function sendMessage(): Promise<void> {
 		return
 	}
 
-	const temp = inputSentMessage.value
+	const message = inputSentMessage.value
 	inputSentMessage.value = ''
-	if (replyMessage.value.user !== '') {
+	if (isReplyMessage.value) {
 		await clientEmits.replyMessage(
 			currentConversation.value.id,
 			replyMessage.value.messageId,
-			String(temp)
+			message
 		)
 		updateSeenMessage()
-		replyToMessage('', '', '')
+		isReplyMessage.value = false
 	} else {
-		await clientEmits.postMessage(currentConversation.value.id, String(temp))
+		await clientEmits.postMessage(currentConversation.value.id, message)
 	}
 }
 
@@ -117,7 +121,7 @@ function updateSeenMessage() {
 	if (
 		!currentConversation.value ||
 		!messages.value ||
-		authenticatedUsername.value === null
+		!authenticatedUsername.value
 	)
 		return
 	const messageId = messages.value[messages.value.length - 1]?.id
@@ -139,49 +143,9 @@ function scrollBottom() {
 	}, 0)
 }
 
-function titleConversation(conversation: Conversation): string {
-	if (conversation.title) return conversation.title
-
-	if (conversation.participants.length > 2) {
-		return `Groupe: ${currentConversationParticipants.value.join(', ')}`
-	}
-
-	const participant = conversation.participants.find(
-		(participant) => participant !== authenticatedUsername.value
-	)
-
-	if (participant) {
-		return participant
-	}
-
-	return 'Anonymous'
-}
-
-function getProfilePicture(participants: string[] | string): string {
-	let username: string | undefined
-	if (Array.isArray(participants)) {
-		username = participants.find(
-			(participant: string) => participant !== authenticatedUsername.value
-		)
-	} else {
-		username = participants
-	}
-
-	const user = users.value.find((user) => user.username === username)
-	if (!user) {
-		return 'https://yt3.ggpht.com/JliOszS4fXEpCIs2it_vsBjwhlNWgZsboezGA7NYUtihf8F54A5I7laaj2d3zpH-io6e2fVL=s900-c-k-c0x00ffffff-no-rj' // Mmmmmh
-	}
-
-	return user.picture_url
-}
-
-function convertStringToDate(date: string): Date {
-	return new Date(date)
-}
-
 function reactMessage($event: {
-	message: typeof Message
-	react: 'HEART' | 'THUMB' | 'HAPPY' | 'SAD'
+	message: ExtendedMessage
+	react: Reaction
 }): void {
 	if (!currentConversation.value) return
 	clientEmits.reactMessage(
@@ -191,17 +155,12 @@ function reactMessage($event: {
 	)
 }
 
-const replyMessage = ref({
-	user: '',
-	content: '',
-	messageId: '',
-})
-
 function replyToMessage(
 	user: string,
 	content: string | null,
 	messageId: string
 ) {
+	isReplyMessage.value = true
 	replyMessage.value = {
 		user: user,
 		content: content === null ? '' : content,
@@ -215,7 +174,10 @@ async function deleteMessage(messageId: string): Promise<void> {
 	await clientEmits.deleteMessage(currentConversation.value.id, messageId)
 }
 
-function getClass(message: MessageType, messages: MessageType[]): string {
+function getClass(
+	message: ExtendedMessage,
+	messages: ExtendedMessage[]
+): string {
 	let c =
 		(() => {
 			const index = messages.findIndex((_message) => _message.id === message.id)
@@ -248,25 +210,9 @@ function getClass(message: MessageType, messages: MessageType[]): string {
 
 	c += ' ' + currentConversation.value?.theme.toLowerCase()
 
-	return c
-}
+	c += ' mw-100'
 
-const messageSeen = (messageID: string) => {
-	if (!currentConversation.value) return []
-	const views = currentConversation.value.seen
-	const viewArray: {
-		id: number
-		user: string
-		message_id: string
-		time: string
-	}[] = []
-	let id = 0
-	for (const view in views) {
-		const value = views[view]
-		if (value === -1 || value.message_id !== messageID) continue
-		viewArray.push({ id: id++, user: view, ...value })
-	}
-	return viewArray
+	return c
 }
 
 const timeRef = ref(new Date())
@@ -283,9 +229,7 @@ const usersWriting = computed(() => {
 
 			const lastActivityDate = new Date(dateString).getTime()
 
-			const activityAfterDelay = delayInSeconds < lastActivityDate
-
-			return activityAfterDelay
+			return delayInSeconds < lastActivityDate
 		})
 		.map((array) => array[0])
 		.join(', ')
@@ -300,15 +244,12 @@ function updateTitle(): void {
 	)
 }
 
-function updateTheme(
-	id: string | undefined,
-	theme: 'BLUE' | 'RED' | 'RAINBOW'
-): void {
+function updateTheme(id: string | undefined, theme: Theme): void {
 	if (!id) return
 	clientEmits.setConversationTheme(id, theme)
 }
 
-function themeSelected(theme: 'BLUE' | 'RED' | 'RAINBOW'): boolean {
+function themeSelected(theme: Theme): boolean {
 	return currentConversation.value?.theme === theme
 }
 
@@ -316,6 +257,7 @@ function muteConversation(): void {
 	if (!currentConversation.value) return
 
 	let conversationsMute = []
+
 	const json = localStorage.getItem('conversationMuteId')
 
 	if (json == null) {
@@ -347,14 +289,15 @@ function isMuteConversation(): boolean {
 	if (json == null || !currentConversation.value) return false
 	const conversationsMute = JSON.parse(json)
 
-	if (conversationsMute.includes(currentConversation.value.id)) return true
-
-	return false
+	return !!conversationsMute.includes(currentConversation.value.id)
 }
 
-function getViewerNickname(nickname: string): string {
-	if (nickname !== '') return ' (' + nickname + ')'
-	else return ''
+function getMessageSeen(messageId: string): UserSeen[] {
+	return (
+		currentConversation.value?.seenUser.filter(
+			(_see) => _see.message_id == messageId
+		) ?? []
+	)
 }
 
 function resetConvTitleValue(): void {
@@ -364,25 +307,18 @@ function resetConvTitleValue(): void {
 /**
  * Returns true if the targeted message was sent after less than 10 minutes than the previous one.
  */
-const isShortTime = (
-	message: MessageType,
-	messages: MessageType[]
-): boolean => {
-	return (() => {
+const isShortTime = (message: ExtendedMessage, messages: ExtendedMessage[]) => {
+	return computed((): boolean => {
 		const index = messages.findIndex((_message) => _message.id === message.id)
 		if (!messages[index - 1]) return true
 		if (messages[index - 1].from !== message.from) return true
 
-		if (
-			convertStringToDate(messages[index - 1].posted_at).getTime() + 600000 <
-			convertStringToDate(message.posted_at).getTime()
+		return (
+			new Date(messages[index - 1].posted_at).getTime() + 600000 <
+			new Date(message.posted_at).getTime()
 		)
-			return true
-
-		return false
-	})()
+	}).value
 }
-
 updateSeenMessage()
 </script>
 
@@ -394,12 +330,12 @@ updateSeenMessage()
 					v-if="
 						currentConversation && currentConversation.participants.length < 3
 					"
-					:src="getProfilePicture(currentConversation.participants)"
+					:src="currentConversation.picture_url"
 					class="avatar"
 					alt="Group photo" />
 
-				<span v-else data-v-73baddaf="">
-					<i data-v-73baddaf="" class="avatar users icon"></i>
+				<span v-else>
+					<i class="avatar users icon"></i>
 				</span>
 			</a>
 
@@ -407,12 +343,14 @@ updateSeenMessage()
 				<div class="ui compact">
 					<i
 						v-if="currentConversation"
-						:class="{ 'icon circle': participantsAreOnline }"></i>
+						:class="{
+							'icon circle': currentConversation.isOnline,
+						}"></i>
 					<span v-if="currentConversation">
-						{{ titleConversation(currentConversation) }}
+						{{ currentConversation.title }}
 						<br />
 						<i class="nickname">
-							{{ getNickname(titleConversation(currentConversation)) }}
+							{{ getNickname(currentConversation.title) }}
 						</i>
 					</span>
 				</div>
@@ -473,13 +411,13 @@ updateSeenMessage()
 							v-for="message in messages"
 							:key="message.id">
 							<div v-if="isShortTime(message, messages)" class="time">
-								{{
-									convertStringToDate(message.posted_at).toLocaleTimeString()
-								}}
+								{{ new Date(message.posted_at).toLocaleTimeString() }}
 							</div>
 							<Message
 								:message="message"
-								:url-icon="getProfilePicture(message.from)"
+								:url-icon="
+									currentConversation?.picture_url ?? DEFAULT_PROFILE_PICTURE
+								"
 								:class="getClass(message, messages)"
 								:nickname="getNickname(message.from)"
 								@react="reactMessage($event)"
@@ -492,12 +430,10 @@ updateSeenMessage()
 								" />
 							<div class="view">
 								<img
-									v-for="view of messageSeen(message.id)"
-									:key="view.id"
-									:src="getProfilePicture(view.user)"
-									:title="`Vu par ${view.user}${getViewerNickname(
-										getNickname(view.user)
-									)} à ${convertStringToDate(view.time).toLocaleTimeString()}`"
+									v-for="view of getMessageSeen(message.id)"
+									:key="view.user.username"
+									:src="view.user.picture_url ?? DEFAULT_PROFILE_PICTURE"
+									:title="view.label"
 									alt="view" />
 							</div>
 						</div>
@@ -511,7 +447,7 @@ updateSeenMessage()
 				</div>
 				<div class="conversation-footer">
 					<div class="wrapper">
-						<p v-if="replyMessage.user !== ''">
+						<p v-if="isReplyMessage">
 							<i title="Abandonner" class="circular times small icon link"></i>
 							Répondre à {{ replyMessage.user }} :
 							<span>{{ replyMessage.content }}</span>
@@ -527,8 +463,8 @@ updateSeenMessage()
 									<p>Edition</p>
 								</div>
 								<input
-									v-on:keyup="typedEvent"
-									v-on:keyup.enter="sendMessage()"
+									v-on:keyup="typingEvent"
+									v-on:keyup.enter="sendMessage"
 									v-model="inputSentMessage"
 									class="prompt"
 									type="text"

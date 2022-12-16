@@ -1,22 +1,18 @@
 <script setup lang="ts">
 import { ref, toRefs } from 'vue'
-import type { Conversation } from '@/client/types/business'
+import type { ExtendedConversation } from '@/client/types/business'
 import { useMessengerStore } from '@/stores/messenger'
 
 const messengerStore = useMessengerStore()
 
-const { conversations, users, authenticatedUsername } = toRefs(messengerStore)
+const { conversations, authenticatedUsername } = toRefs(messengerStore)
 
 const searchInput = ref('')
 
-function filteredMessage(conv: Conversation) {
+function filteredMessage(conv: ExtendedConversation) {
 	return conv.messages.filter((mess) => {
 		return mess.content?.toLowerCase().includes(searchInput.value.toLowerCase())
 	})
-}
-
-function convertStringToDate(date: string): Date {
-	return new Date(date)
 }
 </script>
 
@@ -45,8 +41,8 @@ function convertStringToDate(date: string): Date {
 					<div v-if="conversation.type === 'many_to_many'">
 						<div class="author">
 							<div class="avatar">
-								<span data-v-73baddaf="">
-									<i data-v-73baddaf="" class="users icon"></i>
+								<span>
+									<i class="users icon"></i>
 								</span>
 							</div>
 
@@ -76,7 +72,7 @@ function convertStringToDate(date: string): Date {
 											: 'time'
 									">
 									{{
-										convertStringToDate(conversation.updated_at)
+										new Date(conversation.updated_at)
 											.toLocaleString()
 											.substring(0, 16)
 									}}
@@ -93,21 +89,11 @@ function convertStringToDate(date: string): Date {
 							<img
 								class="img-profil-search"
 								:src="
-									conversation.participants[0] === authenticatedUsername
-										? users.find(
-												(item) => item.username === conversation.participants[1]
-										  )?.picture_url
-										: users.find(
-												(item) => item.username === conversation.participants[0]
-										  )?.picture_url
+									conversation.users.find((_user) => !_user.isMe)?.picture_url
 								"
 								:alt="`Photo de ${conversation.participants[1]}`" />
 							<span>
-								{{
-									conversation.participants[0] === authenticatedUsername
-										? conversation.participants[1]
-										: conversation.participants[0]
-								}}
+								{{ conversation.users.find((_user) => !_user.isMe)?.username }}
 							</span>
 						</div>
 
@@ -127,7 +113,7 @@ function convertStringToDate(date: string): Date {
 											: 'time'
 									">
 									{{
-										convertStringToDate(conversation.updated_at)
+										new Date(conversation.updated_at)
 											.toLocaleString()
 											.substring(0, 16)
 									}}

@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, toRefs } from 'vue'
 import reacts from '@/assets/reacts.json'
-import type { Message } from '@/client/types/business'
 import { useAuthStore } from '@/stores/auth'
+import type { ExtendedMessage } from '../../client/types/business'
 
 const ps = defineProps<{
-	message: Message
-	urlIcon: string
+	message: ExtendedMessage
 	class: string
 	nickname?: string
 }>()
@@ -62,11 +61,11 @@ const editMessage = () => emit('edit-message')
 </script>
 
 <template>
-	<div v-if="user?.username === props.message.from" class="message mine">
+	<div v-if="props.message.fromUser.isMe" class="message mine">
 		<div class="bubble" :class="props.class">
 			<p
 				v-if="props.message.reply_to"
-				class="reply_content"
+				class="break-word reply_content"
 				:class="{
 					'message-deleted': props.message.reply_to.deleted,
 				}">
@@ -76,7 +75,9 @@ const editMessage = () => emit('edit-message')
 						: props.message.reply_to.content
 				}}
 			</p>
-			<p :class="{ 'message-deleted': props.message.deleted }">
+			<p
+				class="break-word"
+				:class="{ 'message-deleted': props.message.deleted }">
 				{{ props.message.deleted ? 'Message supprimé' : props.message.content }}
 			</p>
 		</div>
@@ -107,17 +108,19 @@ const editMessage = () => emit('edit-message')
 				props.class.includes('bottom') || props.class.includes('top bottom')
 			"
 			:title="`${props.message.from} ${titleNickName}`"
-			:src="props.urlIcon"
+			:src="props.message.fromUser.picture_url"
 			:alt="props.message.from" />
 		<div class="bubble" :class="props.class">
-			<p v-if="props.message.reply_to" class="reply_content">
+			<p v-if="props.message.reply_to" class="break-word reply_content">
 				{{
 					props.message.reply_to.deleted
 						? 'Message supprimé'
 						: props.message.reply_to.content
 				}}
 			</p>
-			<p :class="{ 'message-deleted': props.message.deleted }">
+			<p
+				class="break-word"
+				:class="{ 'message-deleted': props.message.deleted }">
 				{{ props.message.deleted ? 'Message supprimé' : props.message.content }}
 			</p>
 		</div>

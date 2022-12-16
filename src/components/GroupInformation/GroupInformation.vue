@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
-import { DEFAULT_PROFILE_PICTURE } from '@/constants'
+import type { ExtendedUser, ParticipantInfo } from '@/client/types/business'
 import { useMessengerStore } from '@/stores/messenger'
 
 const messengerStore = useMessengerStore()
 
-const { authenticatedUsername, currentConversation, users } =
-	toRefs(messengerStore)
+const { currentConversation } = toRefs(messengerStore)
 
 const conversation = currentConversation.value
 
@@ -14,51 +13,23 @@ if (!conversation) throw new Error('CurrentConversation is undefined')
 
 const date = new Date(conversation.updated_at)
 
-const participants: {
-	name: string
-	nickname: string | undefined
-	numberOfMessages: number
-	seen: -1 | { message_id: string; time: string }
-}[] = conversation.participants.map((participant: string) => {
-	let nickname: string = '-'
-	let seen: -1 | { message_id: string; time: string } = -1
-	let numberOfMessages: number = 0
-
-	if (conversation.nicknames[participant])
-		nickname = conversation.nicknames[participant]
-	if (conversation.seen[participant]) {
-		seen = conversation.seen[participant]
+const participants: ParticipantInfo[] = conversation.users.map(
+	(participant: ExtendedUser) => {
+		const seen = conversation.seenUser.find(
+			(_seen) => _seen.user.username === participant.username
+		)
+		if (!seen) throw new Error('Participant seen is undefined')
+		return {
+			name: participant.username,
+			nickname: conversation.nicknames[participant.username] ?? '-',
+			numberOfMessages: (() =>
+				conversation.messagesExtend.filter(
+					(message) => message.from === participant.username
+				).length ?? 0)(),
+			seen,
+		}
 	}
-
-	if (conversation.messages.find((message) => message.from === participant)) {
-		numberOfMessages = conversation.messages.filter(
-			(message) => message.from === participant
-		).length
-	}
-
-	return {
-		name: participant,
-		nickname: nickname,
-		numberOfMessages: numberOfMessages,
-		seen: seen,
-	}
-})
-
-function convertStringToDate(date: string): Date {
-	return new Date(date)
-}
-
-function getProfilePicture(participants: string[]): string {
-	const username = participants.find(
-		(participant) => participant !== authenticatedUsername.value
-	)
-	const user = users.value.find((user) => user.username === username)
-	if (!user) {
-		return DEFAULT_PROFILE_PICTURE
-	}
-
-	return user.picture_url
-}
+)
 </script>
 
 <template>
@@ -66,7 +37,7 @@ function getProfilePicture(participants: string[]): string {
 		<div class="group-information-header">
 			<img
 				v-if="conversation.participants.length < 3"
-				:src="getProfilePicture(conversation.participants)"
+				:src="conversation.picture_url"
 				:alt="`Photo de Conversation #${conversation.id}`"
 				class="avatar" />
 			<span v-else>
@@ -90,13 +61,7 @@ function getProfilePicture(participants: string[]): string {
 					<td>{{ participant.name }}</td>
 					<td>{{ participant.nickname }}</td>
 					<td>
-						{{
-							participant.seen === -1
-								? '-'
-								: `${convertStringToDate(
-										participant.seen.time
-								  ).toLocaleString()}`
-						}}
+						{{ `${new Date(participant.seen.time).toLocaleString()}` }}
 					</td>
 					<td>{{ participant.numberOfMessages }}</td>
 				</tr>

@@ -6,7 +6,6 @@ import type {
 	ConversationTitleSetEvent,
 	ConversationTypedEvent,
 	MessageDeletedEvent,
-	MessageDeliveredEvent,
 	MessageEditedEvent,
 	MessagePostedEvent,
 	MessageReactedEvent,
@@ -53,13 +52,7 @@ export function listenHighLevelClientEvents() {
 		'@messagePosted',
 		async ({ conversation_id, message }) => {
 			messengerStore.upsertMessageConversation(conversation_id, message, 'send')
-		}
-	)
-
-	chatClient.on<MessageDeliveredEvent>(
-		'@messageDelivered',
-		async ({ conversation_id, message }) => {
-			//TODO
+			// @TODO audio
 		}
 	)
 

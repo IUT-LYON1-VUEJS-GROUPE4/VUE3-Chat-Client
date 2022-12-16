@@ -1,8 +1,75 @@
 import { defineStore } from 'pinia'
 import { ref, computed, toRefs } from 'vue'
-import type { Conversation, Message, User } from '@/client/types/business'
+import {
+	DEFAULT_NOTIFY_SOUND,
+	DEFAULT_PROFILE_PICTURE,
+} from '@/assets/constants'
+import type {
+	Conversation,
+	ExtendedMessage,
+	Message,
+	Theme,
+	User,
+	UserSeen,
+} from '@/client/types/business'
 import { useAuthStore } from '@/stores/auth'
-import { DEFAULT_NOTIFY_SOUND } from '../constants'
+import type {
+	ExtendedConversation,
+	ExtendedUser,
+} from '../client/types/business'
+
+function getConversationTitle(
+	conversation: Conversation,
+	usersConversation: ExtendedUser[]
+): string {
+	if (conversation.title) return conversation.title
+
+	if (conversation.participants.length > 2) {
+		return `Groupe: ${conversation.participants.join(', ')}`
+	}
+
+	const user = usersConversation.find((user) => !user.isMe)
+	if (user) return user.username
+	return 'Anonymous'
+}
+
+function getConversationPictureUrl(
+	conversation: Conversation,
+	usersConversation: ExtendedUser[]
+): string {
+	if (conversation.type === 'one_to_one') {
+		return (
+			usersConversation.find((_user) => !_user.isMe)?.picture_url ??
+			DEFAULT_PROFILE_PICTURE
+		)
+	}
+
+	return DEFAULT_PROFILE_PICTURE
+}
+
+function getConversationSeenUser(
+	conversation: Conversation,
+	usersConversation: ExtendedUser[]
+): UserSeen[] {
+	const seenArray: UserSeen[] = []
+	for (const username in conversation.seen) {
+		const see = conversation.seen[username]
+		if (typeof see === 'number') continue
+		const userSee = <User>(
+			usersConversation.find((_user) => username === _user.username)
+		)
+		const nickname = conversation.nicknames[userSee.username]
+		seenArray.push({
+			user: userSee,
+			message_id: see?.message_id ?? null,
+			time: see.time,
+			label: `Vu par ${userSee.username} - ${nickname ?? '?'} à ${new Date(
+				see.time
+			).toLocaleTimeString()}`,
+		})
+	}
+	return seenArray
+}
 
 export const useMessengerStore = defineStore('messenger', () => {
 	const authStore = useAuthStore()
@@ -24,23 +91,52 @@ export const useMessengerStore = defineStore('messenger', () => {
 	const authenticatedUsername = computed(() => userRef.value?.username || null)
 
 	const users = computed(() =>
-		usersRef.value.map((user) => {
+		usersRef.value.map((user): ExtendedUser => {
 			return {
 				...user,
+				isOnline: availableUsernames.value.includes(user.username),
+				isMe: user.username === authenticatedUsername.value,
 			}
 		})
 	)
 
 	const conversations = computed(() =>
-		conversationsRef.value.map((conversation) => {
-			return {
-				...conversation,
+		conversationsRef.value.map(
+			(conversation: Conversation): ExtendedConversation => {
+				const usersConversation = users.value.filter((_user: User) =>
+					conversation.participants.includes(_user.username)
+				)
+				return {
+					...conversation,
+					users: usersConversation,
+					isOnline: usersConversation.some(
+						(_user) => _user.isOnline && !_user.isMe
+					),
+					title: getConversationTitle(conversation, usersConversation),
+					picture_url: getConversationPictureUrl(
+						conversation,
+						usersConversation
+					),
+					messagesExtend: conversation.messages.map(
+						(message: Message): ExtendedMessage => {
+							return {
+								...message,
+								fromUser: <ExtendedUser>(
+									usersConversation.find(
+										(_user) => _user.username === message.from
+									)
+								),
+							}
+						}
+					),
+					seenUser: getConversationSeenUser(conversation, usersConversation),
+				}
 			}
-		})
+		)
 	)
 
 	const currentConversation = computed(() => {
-		return conversationsRef.value.find(
+		return conversations.value.find(
 			(conversation) => conversation.id === currentConversationId.value
 		)
 	})
@@ -55,29 +151,6 @@ export const useMessengerStore = defineStore('messenger', () => {
 			) ?? []
 	)
 
-	/**
-	 * **ManyToMany Conversation**
-	 *
-	 * Current conversation participants are authenticated
-	 *
-	 * Need only one participant online to return true
-	 */
-	const participantsAreOnline = computed((): boolean => {
-		if (!currentConversation.value) return false
-		if (currentConversation.value.participants.length > 2) {
-			const allMember = currentConversationParticipants.value
-
-			for (const member in allMember) {
-				if (availableUsernames.value.includes(member)) return true
-			}
-
-			return false
-		} else
-			return availableUsernames.value.includes(
-				currentConversation.value.participants[1]
-			)
-	})
-
 	return {
 		authenticatedUsername,
 		users,
@@ -85,7 +158,6 @@ export const useMessengerStore = defineStore('messenger', () => {
 		conversations,
 		currentConversation,
 		currentConversationParticipants,
-		participantsAreOnline,
 		setConversations,
 		setCurrentConversationId,
 		setUsers,
@@ -130,8 +202,8 @@ export const useMessengerStore = defineStore('messenger', () => {
 			return 'Groupe: ' + stringReturn.substring(0, stringReturn.length - 2)
 		} else {
 			return Object.entries(currentConversation.value?.nicknames || {})
-				.filter(([usernameKey]) => usernameKey === username)
-				.map((array) => array[1])
+				.filter(([_username]) => _username === username)
+				.map(([, nickname]) => nickname)
 				.toString()
 		}
 	}
@@ -258,10 +330,7 @@ export const useMessengerStore = defineStore('messenger', () => {
 		}
 	}
 
-	function upsertConversationTheme(
-		conversation_id: string,
-		theme: 'BLUE' | 'RED' | 'RAINBOW'
-	) {
+	function upsertConversationTheme(conversation_id: string, theme: Theme) {
 		const conversationIndex = conversationsRef.value.findIndex(
 			(_conversation) => _conversation.id === conversation_id.toString()
 		)
