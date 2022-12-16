@@ -216,6 +216,8 @@ function getClass(
 		c += ' rainbow'
 	}
 
+	c += ' mw-100'
+
 	return c
 }
 

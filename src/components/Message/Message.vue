@@ -65,7 +65,7 @@ const editMessage = () => emit('edit-message')
 		<div class="bubble" :class="props.class">
 			<p
 				v-if="props.message.reply_to"
-				class="reply_content"
+				class="break-word reply_content"
 				:class="{
 					'message-deleted': props.message.reply_to.deleted,
 				}">
@@ -75,7 +75,9 @@ const editMessage = () => emit('edit-message')
 						: props.message.reply_to.content
 				}}
 			</p>
-			<p :class="{ 'message-deleted': props.message.deleted }">
+			<p
+				class="break-word"
+				:class="{ 'message-deleted': props.message.deleted }">
 				{{ props.message.deleted ? 'Message supprimé' : props.message.content }}
 			</p>
 		</div>
@@ -109,14 +111,16 @@ const editMessage = () => emit('edit-message')
 			:src="props.message.fromUser.picture_url"
 			:alt="props.message.from" />
 		<div class="bubble" :class="props.class">
-			<p v-if="props.message.reply_to" class="reply_content">
+			<p v-if="props.message.reply_to" class="break-word reply_content">
 				{{
 					props.message.reply_to.deleted
 						? 'Message supprimé'
 						: props.message.reply_to.content
 				}}
 			</p>
-			<p :class="{ 'message-deleted': props.message.deleted }">
+			<p
+				class="break-word"
+				:class="{ 'message-deleted': props.message.deleted }">
 				{{ props.message.deleted ? 'Message supprimé' : props.message.content }}
 			</p>
 		</div>
