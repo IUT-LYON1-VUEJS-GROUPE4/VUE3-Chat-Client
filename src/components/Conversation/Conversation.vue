@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUpdated, ref, toRefs, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { DEFAULT_PROFILE_PICTURE } from '@/assets/constants.js'
 import type {
-	Conversation,
 	Message as MessageType,
 	Reaction,
 	Theme,
@@ -10,8 +10,8 @@ import type {
 import Group from '@/components/Group/Group.vue'
 import Message from '@/components/Message/Message.vue'
 import { useHighLevelClientEmits } from '@/composables/emits'
-import { DEFAULT_PROFILE_PICTURE } from '@/constants'
 import { useMessengerStore } from '@/stores/messenger'
+import type { UserSeen } from '../../stores/messenger'
 
 const clientEmits = useHighLevelClientEmits()
 
@@ -25,13 +25,8 @@ const scrollElement = ref<HTMLElement | null>(null)
 
 const messengerStore = useMessengerStore()
 
-const {
-	users,
-	currentConversation,
-	authenticatedUsername,
-	currentConversationParticipants,
-	getNickname,
-} = toRefs(messengerStore)
+const { currentConversation, authenticatedUsername, getNickname } =
+	toRefs(messengerStore)
 
 const router = useRouter()
 
@@ -148,40 +143,6 @@ function scrollBottom() {
 	}, 0)
 }
 
-function titleConversation(conversation: Conversation): string {
-	if (conversation.title) return conversation.title
-
-	if (conversation.participants.length > 2) {
-		return `Groupe: ${currentConversationParticipants.value.join(', ')}`
-	}
-
-	const user = conversation.users.find((user) => !user.isMe)
-
-	if (user) {
-		return user.username
-	}
-
-	return 'Anonymous'
-}
-
-function getProfilePicture(participants: string[] | string): string {
-	let username: string | undefined
-	if (Array.isArray(participants)) {
-		username = participants.find(
-			(participant: string) => participant !== authenticatedUsername.value
-		)
-	} else {
-		username = participants
-	}
-
-	const user = users.value.find((user) => user.username === username)
-	if (!user) {
-		return DEFAULT_PROFILE_PICTURE
-	}
-
-	return user.picture_url
-}
-
 function reactMessage($event: {
 	message: typeof Message
 	react: Reaction
@@ -253,24 +214,6 @@ function getClass(message: MessageType, messages: MessageType[]): string {
 	}
 
 	return c
-}
-
-const messageSeen = (messageID: string) => {
-	if (!currentConversation.value) return []
-	const views = currentConversation.value.seen
-	const viewArray: {
-		id: number
-		user: string
-		message_id: string
-		time: string
-	}[] = []
-	let id = 0
-	for (const view in views) {
-		const value = views[view]
-		if (value === -1 || value.message_id !== messageID) continue
-		viewArray.push({ id: id++, user: view, ...value })
-	}
-	return viewArray
 }
 
 const timeRef = ref(new Date())
@@ -350,9 +293,12 @@ function isMuteConversation(): boolean {
 	return !!conversationsMute.includes(currentConversation.value.id)
 }
 
-function getViewerNickname(nickname: string): string {
-	if (nickname !== '') return ' (' + nickname + ')'
-	else return ''
+function getMessageSeen(messageId: string): UserSeen[] {
+	return (
+		currentConversation.value?.seenUser.filter(
+			(_see) => _see.message_id == messageId
+		) ?? []
+	)
 }
 
 function resetConvTitleValue(): void {
@@ -385,7 +331,7 @@ updateSeenMessage()
 					v-if="
 						currentConversation && currentConversation.participants.length < 3
 					"
-					:src="getProfilePicture(currentConversation.participants)"
+					:src="currentConversation.picture_url"
 					class="avatar"
 					alt="Group photo" />
 
@@ -402,10 +348,10 @@ updateSeenMessage()
 							'icon circle': currentConversation.isOnline,
 						}"></i>
 					<span v-if="currentConversation">
-						{{ titleConversation(currentConversation) }}
+						{{ currentConversation.title }}
 						<br />
 						<i class="nickname">
-							{{ getNickname(titleConversation(currentConversation)) }}
+							{{ getNickname(currentConversation.title) }}
 						</i>
 					</span>
 				</div>
@@ -470,7 +416,9 @@ updateSeenMessage()
 							</div>
 							<Message
 								:message="message"
-								:url-icon="getProfilePicture(message.from)"
+								:url-icon="
+									currentConversation?.picture_url ?? DEFAULT_PROFILE_PICTURE
+								"
 								:class="getClass(message, messages)"
 								:nickname="getNickname(message.from)"
 								@react="reactMessage($event)"
@@ -483,12 +431,10 @@ updateSeenMessage()
 								" />
 							<div class="view">
 								<img
-									v-for="view of messageSeen(message.id)"
-									:key="view.id"
-									:src="getProfilePicture(view.user)"
-									:title="`Vu par ${view.user}${getViewerNickname(
-										getNickname(view.user)
-									)} à ${new Date(view.time).toLocaleTimeString()}`"
+									v-for="view of getMessageSeen(message.id)"
+									:key="view.user.username"
+									:src="view.user.picture_url ?? DEFAULT_PROFILE_PICTURE"
+									:title="view.label"
 									alt="view" />
 							</div>
 						</div>

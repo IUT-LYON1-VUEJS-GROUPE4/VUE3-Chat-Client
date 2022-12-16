@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
-import type { User } from '@/client/types/business'
-import { DEFAULT_PROFILE_PICTURE } from '@/constants'
 import { useMessengerStore } from '@/stores/messenger'
 
 const messengerStore = useMessengerStore()
@@ -43,23 +41,6 @@ const participants: {
 		seen: seen,
 	}
 })
-
-function convertStringToDate(date: string): Date {
-	return new Date(date)
-}
-
-function getProfilePicture(users: User[]): string {
-	if (users.length > 2) {
-		return DEFAULT_PROFILE_PICTURE
-	}
-
-	const user = users.find((_user) => !_user.isMe)
-	if (!user) {
-		return DEFAULT_PROFILE_PICTURE
-	}
-
-	return user.picture_url
-}
 </script>
 
 <template>
@@ -67,7 +48,7 @@ function getProfilePicture(users: User[]): string {
 		<div class="group-information-header">
 			<img
 				v-if="conversation.participants.length < 3"
-				:src="getProfilePicture(conversation.users)"
+				:src="conversation.picture_url"
 				:alt="`Photo de Conversation #${conversation.id}`"
 				class="avatar" />
 			<span v-else>
@@ -94,9 +75,7 @@ function getProfilePicture(users: User[]): string {
 						{{
 							participant.seen === -1
 								? '-'
-								: `${convertStringToDate(
-										participant.seen.time
-								  ).toLocaleString()}`
+								: `${new Date(participant.seen.time).toLocaleString()}`
 						}}
 					</td>
 					<td>{{ participant.numberOfMessages }}</td>

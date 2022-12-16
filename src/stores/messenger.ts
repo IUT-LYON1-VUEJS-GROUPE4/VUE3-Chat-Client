@@ -1,13 +1,67 @@
 import { defineStore } from 'pinia'
 import { ref, computed, toRefs } from 'vue'
+import {
+	DEFAULT_NOTIFY_SOUND,
+	DEFAULT_PROFILE_PICTURE,
+} from '@/assets/constants'
 import type {
 	Conversation,
 	Message,
 	Theme,
 	User,
 } from '@/client/types/business'
-import { DEFAULT_NOTIFY_SOUND } from '@/constants'
 import { useAuthStore } from '@/stores/auth'
+
+export interface UserSeen {
+	user: User
+	message_id: string
+	time: string
+	label: string
+}
+
+function getConversationTitle(conversation: Conversation): string {
+	if (conversation.title) return conversation.title
+
+	if (conversation.participants.length > 2) {
+		return `Groupe: ${conversation.participants.join(', ')}`
+	}
+
+	const user = conversation.users.find((user) => !user.isMe)
+	if (user) return user.username
+	return 'Anonymous'
+}
+
+function getConversationPictureUrl(conversation: Conversation): string {
+	if (conversation.type === 'one_to_one') {
+		return (
+			conversation.users.find((_user) => !_user.isMe)?.picture_url ??
+			DEFAULT_PROFILE_PICTURE
+		)
+	}
+
+	return DEFAULT_PROFILE_PICTURE
+}
+
+function getConversationSeenUser(conversation: Conversation): UserSeen[] {
+	const seenArray: UserSeen[] = []
+	for (const username in conversation.seen) {
+		const see = conversation.seen[username]
+		if (typeof see === 'number') continue
+		const userSee = <User>(
+			conversation.users.find((_user) => username === _user.username)
+		)
+		const nickname = conversation.nicknames[userSee.username]
+		seenArray.push({
+			user: userSee,
+			message_id: see?.message_id ?? null,
+			time: see.time,
+			label: `Vu par ${userSee.username} - ${nickname ?? '?'} à ${new Date(
+				see.time
+			).toLocaleTimeString()}`,
+		})
+	}
+	return seenArray
+}
 
 export const useMessengerStore = defineStore('messenger', () => {
 	const authStore = useAuthStore()
@@ -40,15 +94,27 @@ export const useMessengerStore = defineStore('messenger', () => {
 
 	const conversations = computed(() =>
 		conversationsRef.value.map((conversation) => {
-			const usersConversation = users.value.filter((_user: User) =>
+			conversation.users = users.value.filter((_user: User) =>
 				conversation.participants.includes(_user.username)
 			)
 			return {
 				...conversation,
-				users: usersConversation,
-				isOnline: usersConversation.some(
+				isOnline: conversation.users.some(
 					(_user) => _user.isOnline && !_user.isMe
 				),
+				title: getConversationTitle(conversation),
+				picture_url: getConversationPictureUrl(conversation),
+				messages: conversation.messages.map((message: Message): Message => {
+					return {
+						...message,
+						fromUser: <User>(
+							conversation.users.find(
+								(_user) => _user.username === message.from
+							)
+						),
+					}
+				}),
+				seenUser: getConversationSeenUser(conversation),
 			}
 		})
 	)

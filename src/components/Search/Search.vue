@@ -89,11 +89,11 @@ function filteredMessage(conv: Conversation) {
 							<img
 								class="img-profil-search"
 								:src="
-									conversation.users.find((_user) => !_user.isMe).picture_url
+									conversation.users.find((_user) => !_user.isMe)?.picture_url
 								"
 								:alt="`Photo de ${conversation.participants[1]}`" />
 							<span>
-								{{ conversation.users.find((_user) => !_user.isMe).username }}
+								{{ conversation.users.find((_user) => !_user.isMe)?.username }}
 							</span>
 						</div>
 

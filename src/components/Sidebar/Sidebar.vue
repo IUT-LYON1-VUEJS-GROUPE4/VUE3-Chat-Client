@@ -2,8 +2,6 @@
 import { toRefs, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Conversation } from '@/client/types/business'
-import type { User } from '@/client/types/business'
-import { DEFAULT_PROFILE_PICTURE } from '@/constants'
 import { useAuthStore } from '@/stores/auth'
 import { useMessengerStore } from '@/stores/messenger'
 
@@ -61,35 +59,6 @@ const filteredConversations = computed(() => {
 
 	return sortConversations(conversationsResult)
 })
-
-function getProfilePicture(users: User[]): string {
-	if (users.length > 2) {
-		return DEFAULT_PROFILE_PICTURE
-	}
-
-	const user = users.find((_user) => !_user.isMe)
-	if (!user) {
-		return DEFAULT_PROFILE_PICTURE
-	}
-
-	return user.picture_url
-}
-
-function titleConversation(conversation: Conversation): string {
-	if (conversation.title) return conversation.title
-
-	if (conversation.participants.length > 2) {
-		return `Groupe: ${conversation.participants.join(', ')}`
-	}
-
-	const user = conversation.users.find((_user) => !_user.isMe)
-
-	if (user) {
-		return user.username
-	}
-
-	return 'Anonymous'
-}
 
 function sortConversations(conversations: Conversation[]): Conversation[] {
 	return conversations.sort((a, b) =>
@@ -176,12 +145,12 @@ function conversationClassNewConditions(conversation: Conversation): boolean {
 					available: conversation.isOnline,
 				}"
 				:key="conversation.id"
-				:title="titleConversation(conversation)"
+				:title="conversation.title"
 				@click="openConversation(conversation.id)">
 				<a class="avatar">
 					<img
 						v-if="conversation.participants.length < 3"
-						:src="getProfilePicture(conversation.users)"
+						:src="conversation.picture_url"
 						:alt="`Photo de Conversation #${conversation.id}`" />
 					<span v-else>
 						<i
@@ -195,7 +164,7 @@ function conversationClassNewConditions(conversation: Conversation): boolean {
 							<i
 								v-if="conversation.isOnline"
 								class="ui small icon circle green"></i>
-							{{ titleConversation(conversation) }}
+							{{ conversation.title }}
 						</div>
 						<span class="time">
 							{{

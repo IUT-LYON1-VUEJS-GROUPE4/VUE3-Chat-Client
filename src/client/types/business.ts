@@ -14,23 +14,6 @@ export type User = {
 	isMe: boolean
 }
 
-export type Conversation = {
-	id: string
-	type: 'one_to_one' | 'many_to_many'
-	participants: string[]
-	messages: Message[]
-	title: string | null
-	theme: Theme
-	nicknames: Record<string, string>
-	updated_at: string
-	seen: Record<string, -1 | { message_id: string; time: string }>
-	typing: Record<string, string>
-
-	// Front only
-	users: User[]
-	isOnline: boolean
-}
-
 export type Message = {
 	id: string
 	from: string
@@ -42,6 +25,27 @@ export type Message = {
 	edited: boolean
 	deleted: boolean
 	reactions: Record<string, Reaction>
+
+	// Front only
+	fromUser: User
+}
+
+export type Conversation = {
+	id: string
+	type: 'one_to_one' | 'many_to_many'
+	participants: string[]
+	messages: Message[]
+	title: string
+	theme: Theme
+	nicknames: Record<string, string>
+	updated_at: string
+	seen: Record<string, -1 | { message_id: string; time: string }>
+	typing: Record<string, string>
+
+	// Front only
+	users: User[]
+	isOnline: boolean
+	picture_url: string
 }
 
 export type Reaction = 'HEART' | 'THUMB' | 'HAPPY' | 'SAD'
