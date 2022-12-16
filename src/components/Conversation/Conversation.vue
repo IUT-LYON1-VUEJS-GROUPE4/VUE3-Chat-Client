@@ -208,13 +208,7 @@ function getClass(
 			return result
 		})() ?? 'middle'
 
-	if (currentConversation.value?.theme === 'BLUE') {
-		c += ' blue'
-	} else if (currentConversation.value?.theme === 'RED') {
-		c += ' red'
-	} else {
-		c += ' rainbow'
-	}
+	c += ' ' + currentConversation.value?.theme.toLowerCase()
 
 	c += ' mw-100'
 

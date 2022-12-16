@@ -26,14 +26,14 @@ const members = computed(() =>
 	users.value.filter(
 		(user) =>
 			currentConversation.value?.participants.includes(user.username) &&
-			computed(() => isSearchInput(user.username, search.value)).value
+			isSearchInput(user.username, search.value)
 	)
 )
 const community = computed(() =>
 	users.value.filter(
 		(user) =>
 			!currentConversation.value?.participants.includes(user.username) &&
-			computed(() => isSearchInput(user.username, search.value)).value
+			isSearchInput(user.username, search.value)
 	)
 )
 

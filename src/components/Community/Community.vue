@@ -23,8 +23,8 @@ async function openConversation(users: ExtendedUser[]) {
 	if (users.length === 1) {
 		await clientEmits.createOneToOneConversation(users[0].username)
 	} else if (users.length > 1) {
-		const names = computed(() => users.map((user) => user.username))
-		await clientEmits.createManyToManyConversation(names.value)
+		const names = users.map((user) => user.username)
+		await clientEmits.createManyToManyConversation(names)
 	}
 }
 
